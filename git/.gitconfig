@@ -1,0 +1,9 @@
+[user]
+    name = Tiago Pessoa
+    email = tiagoclaropessoa25@gmail.com
+[core]
+    editor = nvim
+[init]
+	defaultBranch = main
+[includeIf "gitdir:~/work/"]
+    path = ~/repos_work/.gitconfig
