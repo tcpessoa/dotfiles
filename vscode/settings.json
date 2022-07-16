@@ -49,6 +49,6 @@
         "editor.defaultFormatter": "vscode.json-language-features"
     },
     "vs-kubernetes": {
-        "vscode-kubernetes.minikube-path.mac": "/Users/tiago.pessoa/.vs-kubernetes/tools/minikube/darwin-amd64/minikube"
+        "vscode-kubernetes.minikube-path.mac": "$HOME/.vs-kubernetes/tools/minikube/darwin-amd64/minikube"
     }
 }

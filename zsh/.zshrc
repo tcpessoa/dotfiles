@@ -1,6 +1,8 @@
 zmodload zsh/zprof
-export PATH=$HOME/bin:/usr/local/bin:$PATH
-export ZSH="/Users/tiago.pessoa/.oh-my-zsh"
+# Still need to figure out why I had this before
+# export PATH=$HOME/bin:/usr/local/bin:$PATH 
+export PATH=/usr/local/bin:$PATH
+export ZSH="$HOME/.oh-my-zsh"
 
 export NVM_LAZY=1 # this is to lazy load nvm for faster startup
 ZSH_THEME=robbyrussell
@@ -46,4 +48,5 @@ alias va='source ./venv/bin/activate'
 ### DOCKER utils
 alias dockersh="docker run -it --privileged --pid=host debian nsenter -t 1 -m -u -n -i sh"
 
-export PATH="/usr/local/opt/openjdk@8/bin:$PATH"
+# Uncomment if using java
+# export PATH="/usr/local/opt/openjdk@8/bin:$PATH"
