@@ -21,5 +21,5 @@ killall Finder
 Install extensions by 
 
 ```sh
-cd vscode; cat extensions.txt | xargs -L 1 echo code --install-extension
+cd vscode; cat extensions.txt | xargs -L 1 code --install-extension
 ```
