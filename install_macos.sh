@@ -3,11 +3,22 @@
 # xcode command line tools
 xcode-select --install
 
+# install homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> $HOME/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 # General software
 brew install zsh;
+# syntax highlighting
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting;
+# auto suggestions/completions
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+# oh my zsh
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)";
 brew install stow;
 brew install python3;
+# nvm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash;
 brew install htop;
 brew install neovim;
@@ -15,16 +26,20 @@ brew install caffeine;
 brew install yarn;
 
 # Browsers
-brew cask install google-chrome;
+brew install --cask google-chrome;
 
 # Code apps
-brew cask install postman;
-brew cask install visual-studio-code;
-brew cask install iterm2;
-brew cask install docker;
+# change iterm color and enable CMD + keys to navigate in line (natural text editing)
+# Profiles -> Keys -> Key mappings -> Natural text editing
+brew install --cask iterm2;
+brew install --cask postman;
+# To enable key repeat with vim extension
+# defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+brew install --cask visual-studio-code;
+brew install --cask docker;
 
 # GUI apps
 brew install --cask rectangle;
-brew cask install spotify;
+brew install --cask spotify;
 brew install --cask karabiner-elements;
 brew install --cask dbeaver-community;
