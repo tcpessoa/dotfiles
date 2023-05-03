@@ -24,6 +24,9 @@ brew install htop;
 brew install neovim;
 brew install caffeine;  
 brew install yarn;
+# others (AstroNvim)
+brew install ripgrep
+brew install lazygit
 
 # Browsers
 brew install --cask google-chrome;
