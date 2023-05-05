@@ -1,10 +1,8 @@
-zmodload zsh/zprof
 # Still need to figure out why I had this before
 # export PATH=$HOME/bin:/usr/local/bin:$PATH 
 export PATH=/usr/local/bin:$PATH
 export ZSH="$HOME/.oh-my-zsh"
 
-export NVM_LAZY=1 # this is to lazy load nvm for faster startup
 ZSH_THEME=robbyrussell
 plugins=(git docker docker-compose kubectl nvm)
 plugins+=(zsh-autosuggestions zsh-syntax-highlighting)
@@ -48,5 +46,18 @@ alias va='source ./venv/bin/activate'
 ### DOCKER utils
 alias dockersh="docker run -it --privileged --pid=host debian nsenter -t 1 -m -u -n -i sh"
 
-# Uncomment if using java
-# export PATH="/usr/local/opt/openjdk@8/bin:$PATH"
+
+# NVM config
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --no-use # This loads nvm in lazy mode (--no-use)
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+# Rust
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# For pyenv to take over the shell
+
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
