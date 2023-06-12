@@ -46,6 +46,9 @@ alias va='source ./venv/bin/activate'
 ### DOCKER utils
 alias dockersh="docker run -it --privileged --pid=host debian nsenter -t 1 -m -u -n -i sh"
 
+### OBSIDIAN
+alias obssync="git add . && git commit -m 'sync' && git push origin main"
+
 
 # NVM config
 export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
