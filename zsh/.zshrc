@@ -28,7 +28,7 @@ timezsh() {
 alias brewup="brew update; brew upgrade; brew cleanup; brew doctor"
 
 ### USEFUL TERMINAL
-alias lt="du -sh * | sort -h"  #sort by size
+alias lt="du -sh * .* | sort -hr"  #sort by size
 # alias left='ls -t -1' # to check last modified files
 alias ls="ls -aG"
 alias gh="history|grep"
@@ -64,3 +64,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/Users/tcpessoa/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
