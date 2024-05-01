@@ -1,3 +1,7 @@
 .DS_Store
 zsh/.config/zsh/.zcompdump*
 zsh/.config/zsh/.zsh_history
+
+zsh/.config/zsh/.zshrc_work
+zsh/.config/zsh/.env_work.zsh
+
