@@ -16,10 +16,16 @@ defaults write com.apple.Finder AppleShowAllFiles true;
 killall Finder
 ```
 
-# VS code
+Check the rest of the `install_macos.sh` script for installation of other packages.
 
-Install extensions by 
-
+# ZSH
+- Ensure that the file `~/.zshenv` exists and is:
 ```sh
-cd vscode; cat extensions.txt | xargs -L 1 code --install-extension
+export ZDOTDIR=$HOME/.config/zsh
 ```
+- Refer to `install_macos.sh` for installation of `oh-my-zsh` and `zsh-syntax-highlighting`.
+- Refer to `zsh/health.zsh` for health check and needed packages.
+
+# Neovim
+
+Managed in other [repo](https://github.com/tcpessoa/kickstart.nvim)

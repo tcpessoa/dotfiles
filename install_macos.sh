@@ -22,12 +22,11 @@ brew install htop;
 brew install neovim;
 brew install caffeine;  
 brew install yarn;
-# others (AstroNvim)
 brew install ripgrep
 brew install lazygit
 
 # Browsers
-brew install --cask google-chrome;
+brew install --cask firefox;
 
 # Code apps
 # change iterm color and enable CMD + keys to navigate in line (natural text editing)
