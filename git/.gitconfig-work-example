@@ -1,0 +1,11 @@
+
+[user]
+	email = tiago.pessoa@company.com
+	name = Tiago Pessoa
+
+[init]
+	defaultBranch = main
+
+[core]
+    sshCommand = ssh -i ~/.ssh/id_rsa
+    pager = delta
