@@ -1,0 +1,7 @@
+!.ignore
+!.gitignore
+# Do not ignore .config directories at any level
+!**/.config/
+
+# Do not ignore files and directories inside any .config directory
+!**/.config/*

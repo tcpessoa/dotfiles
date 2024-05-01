@@ -23,6 +23,13 @@ Check the rest of the `install_macos.sh` script for installation of other packag
 ```sh
 export ZDOTDIR=$HOME/.config/zsh
 ```
+
+If it is the work station, then the `~/.zshenv` file should be:
+```sh
+export ZDOTDIR=$HOME/.config/zsh
+export WORK_ENV="true"
+```
+
 - Refer to `install_macos.sh` for installation of `oh-my-zsh` and `zsh-syntax-highlighting`.
 - Refer to `zsh/health.zsh` for health check and needed packages.
 
