@@ -36,3 +36,12 @@ export WORK_ENV="true"
 # Neovim
 
 Managed in other [repo](https://github.com/tcpessoa/kickstart.nvim)
+
+# Stow
+
+In order to create the symlinks run:
+```sh
+stow zsh -t ~
+```
+Using `-t ~` is explicitly defining that the target for the symlinks is the home directory, which is usually what you want when managing dotfiles. 
+If you do not specify `-t`, `stow` assumes the parent directory of where it is run as the target directory.

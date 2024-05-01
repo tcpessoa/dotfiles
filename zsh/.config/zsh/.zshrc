@@ -8,7 +8,6 @@ source $HOME/.config/zsh/completions.zsh
 
 
 if [[ "$WORK_ENV" == "true" ]]; then
-    echo "Loading work environment..."
     source $HOME/.config/zsh/.zshrc_work
     source $HOME/.config/zsh/env_work.zsh
 fi
