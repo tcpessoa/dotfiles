@@ -5,3 +5,6 @@
 
 # Do not ignore files and directories inside any .config directory
 !**/.config/*
+
+zsh/.config/zsh/env_work.zsh
+zsh/.config/zsh/.zshrc_work.zsh
