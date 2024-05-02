@@ -2,6 +2,10 @@
 ## HOMEBREW
 alias brewup="brew update; brew upgrade; brew cleanup; brew doctor"
 
+## ZSH
+# reloads the .zshrc file
+alias szsh="source ~/.config/zsh/.zshrc"
+
 ## NVIM
 alias nv='nvim'
 

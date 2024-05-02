@@ -10,6 +10,28 @@ generateqr ()
 printf "$@" | curl -F-=\<- qrenco.de
 }
 
+# proj fzf tools
+## [f]ind [p]roject
+fp() {
+    # find only directories at depth 1 for ~/Documents/repos_work/
+    local project=$(fd --type d --hidden --max-depth 1 --ignore-file .ignore . ~/Documents/repos_work --exec basename {} | fzf --height 40% --reverse --prompt 'Select a project: ' | awk -F'/' '{print $NF}')
+    if [[ -n $project ]]; then
+        cd ~/Documents/repos_work/$project
+    else
+        echo "No project selected."
+    fi
+}
+
+## [f]ind [pp]roject
+fpp() {
+    local project=$(fd --type d --hidden --max-depth 1 --ignore-file .ignore . ~/Documents/repos_pers --exec basename {} | fzf --height 40% --reverse --prompt 'Select a project: ' | awk -F'/' '{print $NF}')
+    if [[ -n $project ]]; then
+        cd ~/Documents/repos_pers/$project
+    else
+        echo "No project selected."
+    fi
+}
+
 # git fzf tools
 # [g]it [diff]
 gdiff() {
@@ -89,3 +111,63 @@ stern_logs() {
 
     stern "$deployment"
 }
+
+## docker fzf tools
+## [d]ocker [logs]
+dlogs() {
+    if ! docker version &>/dev/null; then
+        echo "Failed to connect to the Docker daemon."
+        return
+    fi
+    local container=$(docker ps --format "table {{.ID}}\t{{.Names}}" | fzf --height 40% --reverse --prompt 'Select a container: ' | awk '{print $1}')
+
+    if [[ -n $container ]]; then
+        docker logs -f $container
+    else
+        echo "No container selected."
+    fi
+}
+
+## [d]ocker [exec]
+## Execute a shell or a specified command in a running container
+## Usage: dexec [command]
+dexec() {
+    # Check Docker daemon connection
+    if ! docker version &>/dev/null; then
+        echo "Failed to connect to the Docker daemon."
+        return
+    fi
+
+    # Select a container using fzf
+    local container=$(docker ps --format "table {{.ID}}\t{{.Names}}" | fzf --height 40% --reverse --prompt 'Select a container: ' | awk '{print $1}')
+
+    # Execute command or shell in the selected container
+    if [[ -n $container ]]; then
+        if [[ -n $1 ]]; then
+            # If a command argument is provided, execute it
+            docker exec -it $container $1
+        else
+            # Default to opening an interactive shell
+            docker exec -it $container /bin/sh
+        fi
+    else
+        echo "No container selected."
+    fi
+}
+
+## [d]ocker [stop]
+## Stop a running container
+dstop() {
+    if ! docker version &>/dev/null; then
+        echo "Failed to connect to the Docker daemon."
+        return
+    fi
+    local container=$(docker ps --format "table {{.ID}}\t{{.Names}}" | fzf --height 40% --reverse --prompt 'Select a container: ' | awk '{print $1}')
+
+    if [[ -n $container ]]; then
+        docker stop $container
+    else
+        echo "No container selected."
+    fi
+}
+
