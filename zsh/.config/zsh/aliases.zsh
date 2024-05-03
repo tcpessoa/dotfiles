@@ -21,7 +21,7 @@ alias lsm="eza --color=always --long --icons=always --no-user --no-permissions -
 
 ### COMMNON DIRECTORIES
 alias proj="cd ~/Documents/repos_work"
-alias pproj="cd ~/Documents/repos_pers"
+alias pproj="cd ~/code"
 
 ### PYTHON venvs 
 alias ve='python3 -m venv ./.venv'

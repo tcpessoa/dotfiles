@@ -24,9 +24,9 @@ fp() {
 
 ## [f]ind [pp]roject
 fpp() {
-    local project=$(fd --type d --hidden --max-depth 1 --ignore-file .ignore . ~/Documents/repos_pers --exec basename {} | fzf --height 40% --reverse --prompt 'Select a project: ' | awk -F'/' '{print $NF}')
+    local project=$(fd --type d --hidden --max-depth 1 . ~/code --exec basename {} | fzf --height 40% --reverse --prompt 'Select a project: ' | awk -F'/' '{print $NF}')
     if [[ -n $project ]]; then
-        cd ~/Documents/repos_pers/$project
+        cd ~/code/$project
     else
         echo "No project selected."
     fi
