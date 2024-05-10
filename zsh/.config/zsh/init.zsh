@@ -25,3 +25,4 @@ plugins+=(zsh-autosuggestions zsh-syntax-highlighting)
 # Load Oh-My-Zsh
 source $ZSH/oh-my-zsh.sh
 
+export PATH="/opt/homebrew/bin:$PATH"
