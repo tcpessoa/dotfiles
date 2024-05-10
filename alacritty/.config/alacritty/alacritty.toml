@@ -1,9 +1,18 @@
 import = [
     "~/.config/alacritty/themes/themes/kanagawa_wave.toml"
 ]
+[env]
+TERM = "xterm-256color"
+
+[window]
+padding = { x = 10, y = 1 }
+decorations = "Buttonless"
+opacity = 0.9
+blur = true
 
 [font]
 normal = { family = "Hack Nerd Font Mono", style = "Regular" }
+# normal = { family = "JetBrainsMono Nerd Font", style = "Regular" }
 size = 15.0
 
 [keyboard]

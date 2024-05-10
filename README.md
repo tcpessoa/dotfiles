@@ -18,6 +18,12 @@ killall Finder
 
 Check the rest of the `install_macos.sh` script for installation of other packages.
 
+# Alacritty
+- `brew install alacritty`
+- `mkdir -p ~/.config/alacritty`
+- `git clone https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes`
+- `stow alacritty -t ~`
+
 # ZSH
 - Ensure that the file `~/.zshenv` exists and is:
 ```sh
