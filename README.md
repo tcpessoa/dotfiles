@@ -1,6 +1,7 @@
 # dotfiles management
 
-This repo is to manage dotfiles and installing them using stow
+This repo is to manage dotfiles and installing them using stow.
+It accomodates personal and work configurations for gitconfig and zsh.
 
 # MAC OS
 
@@ -16,29 +17,42 @@ defaults write com.apple.Finder AppleShowAllFiles true;
 killall Finder
 ```
 
-Check the rest of the `install_macos.sh` script for installation of other packages.
+Check the rest of the [macos setup](./install_macos.sh) script for installation of other packages.
+
 
 # Alacritty
+- Ensure some Nerd Font is installed:
+```sh
+brew tap homebrew/cask-fonts
+brew install font-hack-nerd-font
+```
 - `brew install alacritty`
 - `mkdir -p ~/.config/alacritty`
 - `git clone https://github.com/alacritty/alacritty-theme ~/.config/alacritty/themes`
 - `stow alacritty -t ~`
 
 # ZSH
-- Ensure that the file `~/.zshenv` exists and is:
+If it is the work station, then the [zshenv](./zsh/.zshenv) file should handle the `WORK_ENV` var:
+
+- Refer to [macos setup](./install_macos.sh) for installation of `oh-my-zsh` and `zsh-syntax-highlighting`.
+- Refer to [health.zsh](./zsh/.config/zsh/health.zsh) for health check and needed packages. You may need to adjust the _shebang_ to the correct path of the `zsh` executable:
+
 ```sh
-export ZDOTDIR=$HOME/.config/zsh
+#!/usr/local/bin/zsh
+(...)
 ```
 
-If it is the work station, then the `~/.zshenv` file should be:
 ```sh
-export ZDOTDIR=$HOME/.config/zsh
-export WORK_ENV="true"
+#!/opt/homebrew/bin/zsh
+(...) M chip macos
 ```
 
-- Refer to `install_macos.sh` for installation of `oh-my-zsh` and `zsh-syntax-highlighting`.
-- Refer to `zsh/health.zsh` for health check and needed packages.
-
+# Git
+- Check the [gitconfig](./git/.gitconfig-work-example) file for an example of a work configuration. This file should be copied to `~/.gitconfig-work`:
+```sh
+cp git/.gitconfig-work-example ~/.gitconfig-work
+```
+- This configuration assumes that the work repos will be in `~/Documents/work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
 
 # Stow
 

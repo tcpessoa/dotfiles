@@ -6,5 +6,9 @@
 # Do not ignore files and directories inside any .config directory
 !**/.config/*
 
-zsh/.config/zsh/env_work.zsh
-zsh/.config/zsh/.zshrc_work.zsh
+!zsh/.zshenv
+!zsh/.config/zsh/env_work.zsh
+
+# Git
+!git/.gitconfig
+!git/.gitconfig-work-example
