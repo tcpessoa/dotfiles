@@ -113,13 +113,22 @@ stern_logs() {
 }
 
 ## docker fzf tools
-## [d]ocker [logs]
-dlogs() {
+select_docker_container() {
+    docker ps --format "table {{.ID}}\t{{.Names}}" | tail -n +2 | fzf --height 40% --reverse --prompt 'Select a container: ' | awk '{print $1}'
+}
+
+check_docker_daemon() {
     if ! docker version &>/dev/null; then
         echo "Failed to connect to the Docker daemon."
-        return
+        return 1
     fi
-    local container=$(docker ps --format "table {{.ID}}\t{{.Names}}" | fzf --height 40% --reverse --prompt 'Select a container: ' | awk '{print $1}')
+    return 0
+}
+
+## [d]ocker [logs]
+dlogs() {
+    check_docker_daemon || return
+    local container=$(select_docker_container)
 
     if [[ -n $container ]]; then
         docker logs -f $container
@@ -132,16 +141,9 @@ dlogs() {
 ## Execute a shell or a specified command in a running container
 ## Usage: dexec [command]
 dexec() {
-    # Check Docker daemon connection
-    if ! docker version &>/dev/null; then
-        echo "Failed to connect to the Docker daemon."
-        return
-    fi
+    check_docker_daemon || return
+    local container=$(select_docker_container)
 
-    # Select a container using fzf
-    local container=$(docker ps --format "table {{.ID}}\t{{.Names}}" | fzf --height 40% --reverse --prompt 'Select a container: ' | awk '{print $1}')
-
-    # Execute command or shell in the selected container
     if [[ -n $container ]]; then
         if [[ -n $1 ]]; then
             # If a command argument is provided, execute it
@@ -158,11 +160,8 @@ dexec() {
 ## [d]ocker [stop]
 ## Stop a running container
 dstop() {
-    if ! docker version &>/dev/null; then
-        echo "Failed to connect to the Docker daemon."
-        return
-    fi
-    local container=$(docker ps --format "table {{.ID}}\t{{.Names}}" | fzf --height 40% --reverse --prompt 'Select a container: ' | awk '{print $1}')
+    check_docker_daemon || return
+    local container=$(select_docker_container)
 
     if [[ -n $container ]]; then
         docker stop $container
