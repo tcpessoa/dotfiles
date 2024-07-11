@@ -14,6 +14,7 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 # oh my zsh
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)";
+
 brew install stow;
 brew install pyenv;
 # nvm
@@ -21,7 +22,6 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash;
 brew install htop;
 brew install neovim;
 brew install caffeine;  
-brew install yarn;
 brew install ripgrep
 brew install lazygit
 
@@ -32,6 +32,7 @@ brew install --cask firefox;
 # change iterm color and enable CMD + keys to navigate in line (natural text editing)
 # Profiles -> Keys -> Key mappings -> Natural text editing
 brew install --cask iterm2;
+
 brew install --cask postman;
 # To enable key repeat with vim extension
 # defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false

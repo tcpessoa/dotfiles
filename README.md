@@ -70,6 +70,20 @@ Currently using the pure preset, need to run:
 starship preset pure-preset -o ~/.config/starship.toml
 ```
 
+At work I add for kubernetes:
+
+```toml
+format = """
+(...)
+$kubernetes\
+(...)
+"""
+(...)
+[kubernetes]
+format = '[$symbol\[[$context](bold fg:purple) $namespace\]](fg:bright-blue) '
+disabled = false
+```
+
 # Neovim
 
 Managed in other [repo](https://github.com/tcpessoa/kickstart.nvim)
