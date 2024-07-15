@@ -59,7 +59,7 @@ for tool command in ${(kv)tools}; do
     check_tool $tool $command
 done
 
-echo "Check for kubectx manually, it doesn't have a version command"
+echo "\n---> Check for [kubectx, grc] manually, it doesn't have a version command"
 # Final status
 if (( ${#missing_tools} )); then
     echo "The following tools are missing: $missing_tools"
