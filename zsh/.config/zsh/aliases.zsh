@@ -38,3 +38,17 @@ alias kns="kubens"
 ### OBSIDIAN
 alias obssync="git add . && git commit -m \"sync\" && git push origin main"
 
+### TMUX
+alias tl='tmuxp_file=$(fd -t f -e yaml . ~/.config/tmuxp | \
+  fzf --reverse \
+      --height 40% \
+      --min-height 10 \
+      --layout reverse \
+      --border \
+      --preview "bat --style=numbers --color=always {}" \
+      --preview-window right:50%); \
+  if [ -n "$tmuxp_file" ]; then \
+    (cd ~ && tmuxp load -y "$tmuxp_file"); \
+  fi'
+alias ta='tmux a'
+alias tls='tmux ls'
