@@ -40,6 +40,7 @@ tools=(
     bun "bun --version"
     starship "starship --version"
     pyenv "pyenv --version"
+    tms "tms --version"
 )
 # CHECK kubectx manually, includes kubens
 
