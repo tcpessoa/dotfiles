@@ -33,14 +33,14 @@ tools=(
     bat "bat --version"
     kubectl "kubectl version --client"
     docker "docker --version"
-    delta "delta --version"
+    delta "delta --version" # brew install git-delta
     eza "eza --version"
     node "node --version"
     npm "npm --version"
     bun "bun --version"
     starship "starship --version"
     pyenv "pyenv --version"
-    tms "tms --version"
+    tms "tms --version" # cargo install tmux-sessionizer
 )
 # CHECK kubectx manually, includes kubens
 
