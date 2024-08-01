@@ -1,8 +1,10 @@
 .DS_Store
 tmux/.config/tmux/plugins/*
-zsh/.config/zsh/.zcompdump*
-zsh/.config/zsh/.zsh_history
 
+# ZSH
+zsh/.config/zsh/.zcompdump*
+zsh/.config/zsh/.zsh_sessions/*
+zsh/.config/zsh/.zsh_history
 zsh/.config/zsh/.zshrc_work
 zsh/.config/zsh/.zshrc_work.bak
 zsh/.config/zsh/env_work.zsh
