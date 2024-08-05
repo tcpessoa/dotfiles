@@ -1,0 +1,13 @@
+[[search_dirs]]
+path = "~/.config/nvim/"
+depth = 1
+[[search_dirs]]
+path = "~/dotfiles"
+depth = 1
+[[search_dirs]]
+path = "~/code"
+depth = 1
+[[search_dirs]]
+path = "~/Documents/repos_work/"
+depth = 1
+
