@@ -18,6 +18,8 @@ alias lss="eza --color=always --long --icons=always --no-user --no-permissions -
 alias lsst="eza --color=always --long --icons=always --no-user --no-permissions --sort size -r -a --total-size"
 # ls [m]odified
 alias lsm="eza --color=always --long --icons=always --no-user --no-permissions --sort modified -r -a"
+# [h]istory [t]ime
+alias ht="fc -rlt '%Y-%m-%d %H:%M:%S' 1"
 
 ### COMMNON DIRECTORIES
 alias proj="cd ~/Documents/repos_work"
