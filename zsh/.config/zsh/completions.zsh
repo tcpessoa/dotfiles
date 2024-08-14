@@ -1,5 +1,7 @@
 # Completion and interactivity enhancements
-eval "$(fzf --zsh)"
+## the sed part is to enable the history pretty date on CTRL-R
+## see this [github issue](https://github.com/junegunn/fzf/issues/1049#issuecomment-2168007994)
+eval "$(fzf --zsh | sed -e '/zmodload/s/perl/perl_off/' -e '/selected/s/fc -rl/fc -rlt \"%Y-%m-%d %H:%M\"/')"
 eval "$(starship init zsh)"
 [[ -s "/usr/local/etc/grc.zsh" ]] && source /usr/local/etc/grc.zsh
 
