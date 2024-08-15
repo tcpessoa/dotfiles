@@ -86,12 +86,33 @@ klogs() {
         return
     fi
 
-    local namespace=$(kubectl get namespaces --no-headers | fzf --height 40% --reverse --prompt 'Select a namespace: ' | awk '{print $1}')
-
-    local pod=$(kubectl get pods -n $namespace --no-headers | fzf --height 40% --reverse --prompt 'Select a pod: ' | awk '{print $1}')
+    local pod=$(kubectl get pods --no-headers | fzf --height 40% --reverse --prompt 'Select a pod: ' | awk '{print $1}')
 
     if [[ -n $pod ]]; then
-        kubectl logs -f -n $namespace $pod
+        kubectl logs -f $pod
+    else
+        echo "No pod selected."
+    fi
+}
+
+## [k]ubectl [exec]
+## Execute a shell or a specified command in a running pod
+kexec() {
+    if ! kubectl version --request-timeout='3s' &>/dev/null; then
+        echo "Failed to connect to the Kubernetes cluster."
+        return
+    fi
+
+    local pod=$(kubectl get pods --no-headers | fzf --height 40% --reverse --prompt 'Select a pod: ' | awk '{print $1}')
+
+    if [[ -n $pod ]]; then
+        if [[ -n $1 ]]; then
+            # If a command argument is provided, execute it
+            kubectl exec -it $pod -- $1
+        else
+            # Default to opening an interactive shell
+            kubectl exec -it $pod -- /bin/bash
+        fi
     else
         echo "No pod selected."
     fi
@@ -150,7 +171,7 @@ dexec() {
             docker exec -it $container $1
         else
             # Default to opening an interactive shell
-            docker exec -it $container /bin/sh
+            docker exec -it $container /bin/bash
         fi
     else
         echo "No container selected."
