@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Function to create a new daily note
+create_daily_note() {
+    # Set the directory for daily notes
+    DAILY_DIR="$ZETTELKASTEN/00-Zet/Daily"
+    
+    # Create the directory if it doesn't exist
+    mkdir -p "$DAILY_DIR"
+    
+    # Get today's date in YYYY-MM-DD format
+    TODAY=$(date +"%Y-%m-%d")
+    
+    # Create the filename
+    FILENAME="$DAILY_DIR/$TODAY.md"
+    
+    # Check if the file already exists
+    if [[ -f "$FILENAME" ]]; then
+        echo "Today's note already exists. Opening existing file."
+    else
+        # Create the file with a template
+        cat << EOF > "$FILENAME"
+# $TODAY
+
+## Tasks
+- [ ] 
+
+## Notes
+
+## Links
+- [[$(date -v-1d +"%Y-%m-%d")]] (Yesterday)
+- [[$(date -v+1d +"%Y-%m-%d")]] (Tomorrow)
+
+EOF
+        echo "Created new daily note for $TODAY"
+    fi
+    
+    # Open the file in Neovim
+    nvim "+ normal ggzzi" "$FILENAME"
+}
+
+# Run the function
+create_daily_note

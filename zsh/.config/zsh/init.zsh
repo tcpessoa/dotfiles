@@ -3,6 +3,8 @@ export ZSH="$HOME/.oh-my-zsh"
 export BAT_THEME="TwoDark"
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
 export PATH="$HOME/.rd/bin:$PATH"
+# For my custom scripts
+export PATH="$HOME/bin:$PATH"
 # Rust setup
 . "$HOME/.cargo/env"
 

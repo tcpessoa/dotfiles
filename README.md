@@ -63,6 +63,16 @@ stow zsh -t ~
 Using `-t ~` is explicitly defining that the target for the symlinks is the home directory, which is usually what you want when managing dotfiles. 
 If you do not specify `-t`, `stow` assumes the parent directory of where it is run as the target directory.
 
+# Scripts
+```sh
+stow scripts -t ~
+```
+
+Then from the home directory, run:
+```sh
+chmod +x dotfiles/scripts/bin/*
+```
+
 # Starship
 
 Currently using the pure preset, need to run:
