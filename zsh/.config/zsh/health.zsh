@@ -1,4 +1,4 @@
-#!/usr/local/bin/zsh
+#!/bin/zsh
 
 # Function to check if a tool is installed, with a special case for ripgrep
 check_tool() {
