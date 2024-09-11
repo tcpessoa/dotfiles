@@ -16,12 +16,15 @@ lazy_load_nvm() {
   [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
 }
 
+bindkey -v # Use vi keybindings in ZSH
+export KEYTIMEOUT=1 # Reduce key timeout, vi mode
+
 npm() { lazy_load_nvm; npm $@; }
 node() { lazy_load_nvm; node $@; }
 nvm() { lazy_load_nvm; nvm $@; }
 
 # Plugin setup
-plugins=(git docker docker-compose kubectl nvm)
+plugins=(git docker docker-compose kubectl nvm vi-mode)
 plugins+=(zsh-autosuggestions zsh-syntax-highlighting)
 
 # Load Oh-My-Zsh
