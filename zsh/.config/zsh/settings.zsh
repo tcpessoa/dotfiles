@@ -5,4 +5,4 @@ else
   export EDITOR='nvim'
 fi
 
-
+export BAT_THEME="TwoDark"

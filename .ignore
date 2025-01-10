@@ -8,6 +8,7 @@
 
 !zsh/.zshenv
 !zsh/.config/zsh/env_work.zsh
+!zsh/.config/zsh/env.local
 
 # Git
 !git/.gitconfig

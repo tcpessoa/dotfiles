@@ -1,14 +1,23 @@
-# Environment setup
+# zsh stuff
 export ZSH="$HOME/.oh-my-zsh"
-export BAT_THEME="TwoDark"
+export XDG_CONFIG_HOME="$HOME/.config"
+export HISTFILE="$ZDOTDIR/.zsh_history"
+export HISTSIZE=10000
+export SAVEHIST=10000
+
+# PATH
 export PATH="$HOME/.rd/bin:$PATH" ### Rancher Desktop
 export PATH="/opt/homebrew/bin:$PATH"
 export PATH="$PATH:$HOME/.local/bin"
 export PATH="$HOME/bin:$PATH"
+
 # Rust setup
 . "$HOME/.cargo/env"
 
-# Lazy load NVM function
+# Load env
+source "$HOME/.config/zsh/env.local" 2>/dev/null || true
+
+# Lazy load slow functions, faster shell startup
 lazy_load_nvm() {
   unset -f npm node nvm
   export NVM_DIR=~/.nvm
@@ -27,5 +36,4 @@ nvm() { lazy_load_nvm; nvm $@; }
 plugins=(git docker docker-compose kubectl nvm vi-mode)
 plugins+=(zsh-autosuggestions zsh-syntax-highlighting)
 
-# Load Oh-My-Zsh
 source $ZSH/oh-my-zsh.sh

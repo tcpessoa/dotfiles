@@ -8,4 +8,5 @@ zsh/.config/zsh/.zsh_history
 zsh/.config/zsh/.zshrc_work
 zsh/.config/zsh/.zshrc_work.bak
 zsh/.config/zsh/env_work.zsh
+zsh/.config/zsh/env.local
 
