@@ -1,0 +1,23 @@
+# theme = kanagawabones
+theme = Kanagawa Wave
+# theme = kanagawa-wave
+# term = xterm-256color
+font-family = Hack Nerd Font Mono
+font-style = Regular
+font-size = 15
+
+background-opacity = 0.95
+
+background-blur-radius = 20
+
+# default: 2
+window-padding-x = 10
+
+# causes squared corners, default true
+# window-decoration = false 
+
+# default: transparent, this one does not cause squared corners
+macos-titlebar-style = hidden 
+
+# Bold looks weird, I like this option better
+font-thicken = true
