@@ -94,6 +94,10 @@ format = '[$symbol\[[$context](bold fg:purple) $namespace\]](fg:bright-blue) '
 disabled = false
 ```
 
+# btop
+
+Need to download themes to the corresponding themes folder.
+
 # Neovim
 
 Managed in other [repo](https://github.com/tcpessoa/kickstart.nvim)
