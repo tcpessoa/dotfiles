@@ -118,6 +118,127 @@ kexec() {
     fi
 }
 
+# Configuration
+DEFAULT_IMAGE="alpine"
+DEFAULT_CPU_LIMIT="0.5"
+DEFAULT_MEM_LIMIT="512Mi"
+DEFAULT_CPU_REQUEST="0.25"
+DEFAULT_MEM_REQUEST="256Mi"
+
+typeset -A DEBUG_IMAGES
+DEBUG_IMAGES=(
+  ubuntu "ubuntu:22.04"
+  alpine "alpine" # alpine:3.20.3
+  netshoot "nicolaka/netshoot"
+  troubleshoot "debian:bullseye-slim"
+)
+
+usage() {
+    echo "Usage: kdebug [OPTIONS]"
+    echo "Create a debug pod in Kubernetes"
+    echo
+    echo "Options:"
+    echo "  -n, --name NAME       Pod name (default: debug-pod-<random>)"
+    echo "  -i, --image IMAGE     Container image to use"
+    echo "                        Available: ${(k)DEBUG_IMAGES}"
+    echo "  -c, --cpu CPU        CPU limit (default: ${DEFAULT_CPU_LIMIT})"
+    echo "  -m, --memory MEM     Memory limit (default: ${DEFAULT_MEM_LIMIT})"
+    echo "  -h, --help           Show this help message"
+}
+
+create_debug_pod() {
+    local name=$1
+    local image=$2
+    local cpu_limit=$3
+    local mem_limit=$4
+    local cpu_request=$5
+    local mem_request=$6
+
+    local command='["/bin/bash"]'
+    if [[ "$image" == "alpine:3.19" ]]; then
+        command='["/bin/sh", "-c", "apk add --no-cache vim curl wget bash && /bin/bash"]'
+    fi
+
+    # Generate manifest
+    cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ${name}
+  labels:
+    app: debug-pod
+spec:
+  containers:
+  - name: debug
+    image: ${image}
+    command: ["/bin/bash"]
+    stdin: true
+    tty: true
+    resources:
+      limits:
+        cpu: "${cpu_limit}"
+        memory: "${mem_limit}"
+      requests:
+        cpu: "${cpu_request}"
+        memory: "${mem_request}"
+  restartPolicy: Never
+EOF
+
+    echo "Waiting for pod to be ready..."
+    kubectl wait --for=condition=Ready pod/${name} --timeout=60s
+    echo "Pod ${name} is ready. Connecting..."
+    kubectl exec -it ${name} -- /bin/bash
+}
+
+# Main script
+# [k]ubectl [debug]
+kdebug() {
+    local name="debug-pod-$(head -c 6 /dev/urandom | xxd -p)"
+    local image="${DEFAULT_IMAGE}"
+    local cpu_limit="${DEFAULT_CPU_LIMIT}"
+    local mem_limit="${DEFAULT_MEM_LIMIT}"
+    local cpu_request="${DEFAULT_CPU_REQUEST}"
+    local mem_request="${DEFAULT_MEM_REQUEST}"
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -n|--name)
+                name="$2"
+                shift 2
+                ;;
+            -i|--image)
+                if (( ${+DEBUG_IMAGES[$2]} )); then
+                    image="${DEBUG_IMAGES[$2]}"
+                else
+                    image="$2"
+                fi
+                shift 2
+                ;;
+            -c|--cpu)
+                cpu_limit="$2"
+                cpu_request=$(awk "BEGIN {print $2/2}")
+                shift 2
+                ;;
+            -m|--memory)
+                mem_limit="$2"
+                mem_request=$(echo "$2" | sed 's/Gi//'| awk '{print $1/2}')Gi
+                shift 2
+                ;;
+            -h|--help)
+                usage
+                return 0
+                ;;
+            *)
+                echo "Unknown option: $1"
+                usage
+                return 1
+                ;;
+        esac
+    done
+
+    create_debug_pod "$name" "$image" "$cpu_limit" "$mem_limit" "$cpu_request" "$mem_request"
+}
+
 stern_logs() {
     if ! kubectl version --request-timeout='3s' &>/dev/null; then
         echo "Failed to connect to the Kubernetes cluster."
@@ -191,3 +312,27 @@ dstop() {
     fi
 }
 
+## [f]ile [log]
+## Logs to console and to files
+# 1. As a function: log_output "output.log" "error.log" "your_command"
+# 2. With a pipe: echo "Hello, World!" | log_output "output.log" "error.log"
+flog() {
+    local stdout_log="${1:-out.log}"
+    local stderr_log="${2:-err.log}"
+
+    # Check if we're receiving input from a pipe
+    if [ -p /dev/stdin ]; then
+        # Handle piped input
+        { tee "$stdout_log"; } 2> >(tee "$stderr_log" >&2)
+    else
+        # Handle direct command execution
+        shift 2
+        local cmd=("$@")
+        if [ ${#cmd[@]} -eq 0 ]; then
+            echo "Error: No command provided and no piped input detected." >&2
+            return 1
+        fi
+
+        { "${cmd[@]}"; } > >(tee "$stdout_log") 2> >(tee "$stderr_log" >&2)
+    fi
+}
