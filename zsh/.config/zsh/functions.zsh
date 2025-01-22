@@ -10,6 +10,17 @@ generateqr ()
 printf "$@" | curl -F-=\<- qrenco.de
 }
 
+# GIT yolo sync
+gsync() {
+    git add . && \
+    if ! git diff --quiet HEAD; then
+        git commit -m "sync" && \
+        git push origin HEAD
+    else
+        echo "No changes to commit"
+    fi
+}
+
 # proj fzf tools
 ## [f]ind [p]roject
 fp() {
@@ -76,6 +87,30 @@ gfhist() {
             fi
         done
     done
+}
+
+gbdiff() {
+    local current_branch=$(git branch --show-current)
+
+            # --preview 'git log --oneline --graph --color=always --abbrev-commit {1}' \
+    local target_branch=$(git branch --format='%(refname:short)' | \
+        grep -v "^${current_branch}$" | \
+        fzf --height 100% \
+            --header "Select branch to compare against ${current_branch}" \
+            --preview 'git log --graph --color=always --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset" --stat {1}' \
+            --preview-window right:50%:wrap)
+
+    if [[ -n "$target_branch" ]]; then
+        git diff --name-only "${target_branch}".."${current_branch}" | \
+        fzf --height 100% \
+            --preview "git diff ${target_branch}..${current_branch} -- {} | delta --paging=always" \
+            --preview-window=right:65%:wrap \
+            --bind "j:down,k:up,ctrl-j:preview-down,ctrl-k:preview-up" \
+            --bind 'ctrl-d:preview-half-page-down' \
+            --bind 'ctrl-u:preview-half-page-up' \
+            --bind "enter:execute(git diff ${target_branch}..${current_branch} -- {} | delta --paging=always)" \
+            --header "Enter: full diff, Ctrl-J/K: preview, J/K: scroll, Ctrl-U/D: half page"
+    fi
 }
 
 ## --- k8s fzf tools
