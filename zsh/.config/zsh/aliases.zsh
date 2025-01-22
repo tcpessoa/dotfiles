@@ -56,3 +56,6 @@ alias tl='tmuxp_file=$(fd -t f -e yaml . ~/.config/tmuxp | \
   fi'
 alias ta='tmux a'
 alias tls='tmux ls'
+
+### LAZYGIT
+alias lg='lazygit'
