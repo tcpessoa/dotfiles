@@ -8,28 +8,39 @@ It accomodates personal and work configurations for gitconfig and zsh.
 Run this for base installation (oh my zsh, homebrew, finder, etc):
 
 ```sh
-./base_macos.sh
+./base_macos
 ```
 
-# CLI and GUI tools
+# Install packages
 
-# ZSH
-If it is the work station, then the [zshenv](./zsh/.zshenv) file should handle the `WORK_ENV` var:
-
-
-# Git
-- Check the [gitconfig](./git/.gitconfig-work-example) file for an example of a work configuration. This file should be copied to `~/.gitconfig-work`:
 ```sh
-cp git/.gitconfig-work-example ~/.gitconfig-work
+./packages/install
 ```
-- This configuration assumes that the work repos will be in `~/Documents/work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
 
-# Stow
+# Stow all home configs
 
 In order to create the symlinks run:
 ```sh
 ./sync-stow
 ```
+
+# ZSH and env vars
+Set all needed env vars in the [env.local](zsh/.config/zsh/env.local) file:
+
+```sh
+export WORK_ENV=true
+export MY_KEY=sk-123
+```
+
+# Git
+- Check the [gitconfig](./git/.gitconfig-work-example) file for an example of a work configuration. This file should be copied to `~/.gitconfig-work`:
+
+```sh
+cp git/.gitconfig-work-example ~/.gitconfig-work
+```
+
+- This configuration assumes that the work repos will be in `~/Documents/work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
+
 
 # Starship
 

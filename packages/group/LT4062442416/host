@@ -1,12 +1,11 @@
-helm
-stern
 angular-cli
 gh
-go
+grc
+helm
 kubeseal
 pipx
 pnpm
-rust
+stern
 task
 taskwarrior-tui
 uv
