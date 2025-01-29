@@ -59,3 +59,6 @@ alias tls='tmux ls'
 
 ### LAZYGIT
 alias lg='lazygit'
+
+### TASKWARRIOR
+alias tt='taskwarrior-tui'

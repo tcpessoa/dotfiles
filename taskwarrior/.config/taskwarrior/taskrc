@@ -1,0 +1,40 @@
+# [Created by task 3.3.0 1/23/2025 13:34:15]
+data.location=/Users/tiago.pessoa/.task
+news.version=3.4.0
+
+# To use the default location of the XDG directories,
+# move this configuration file from ~/.taskrc to ~/.config/task/taskrc and update location config as follows:
+
+#data.location=~/.local/share/task
+#hooks.location=~/.config/task/hooks
+
+# Color theme (uncomment one to use)
+#include light-16.theme
+#include light-256.theme
+#include bubblegum-256.theme
+#include dark-16.theme
+#include dark-256.theme
+#include dark-red-256.theme
+#include dark-green-256.theme
+#include dark-blue-256.theme
+#include dark-violets-256.theme
+#include dark-yellow-green.theme
+#include dark-gray-256.theme
+#include dark-gray-blue-256.theme
+#include solarized-dark-256.theme
+#include solarized-light-256.theme
+#include no-color.theme
+
+# Custom UDA for pomodoros
+uda.pomodoros.type=numeric
+uda.pomodoros.label=Pomodoros
+uda.pomodoros.default=1
+
+# Custom UDA for time spent
+uda.timeSpent.type=duration
+uda.timeSpent.label=Time Spent
+
+# Custom reports
+report.pomoreport.description=Pomodoro-focused report
+report.pomoreport.columns=id,project,description,pomodoros,timeSpent
+report.pomoreport.labels=ID,Proj,Desc,Pomo,Time

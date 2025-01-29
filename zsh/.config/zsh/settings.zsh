@@ -6,3 +6,4 @@ else
 fi
 
 export BAT_THEME="TwoDark"
+export TASKRC=$HOME/.config/taskwarrior/taskrc

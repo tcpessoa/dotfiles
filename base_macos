@@ -1,0 +1,112 @@
+#!/bin/bash
+set -e
+
+echo "Starting initial setup..."
+
+if ! xcode-select -p &>/dev/null; then
+    echo "Installing Xcode Command Line Tools..."
+    xcode-select --install
+    
+    echo "Waiting for Xcode Command Line Tools installation..."
+    until xcode-select -p &>/dev/null; do
+        sleep 2
+    done
+    echo "Xcode Command Line Tools installation complete"
+fi
+
+# Homebrew
+if ! command -v brew &>/dev/null; then
+    echo "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+# Install Oh My Zsh if not installed
+if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
+    echo "Installing Oh My Zsh..."
+    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    
+    # Make sure we're still using Zsh
+    if [[ "$SHELL" != *"zsh"* ]]; then
+        echo "Changing default shell to Zsh..."
+        chsh -s "$(command -v zsh)"
+    fi
+fi
+
+# ZSH plugins
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+
+if [[ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]]; then
+    echo "Installing Zsh syntax highlighting..."
+    git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git \
+        "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+fi
+
+if [[ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]]; then
+    echo "Installing Zsh autosuggestions..."
+    git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git \
+        "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+fi
+
+configure_finder() {
+    echo "Configuring Finder preferences..."
+    
+    # Show hidden files
+    defaults write com.apple.Finder AppleShowAllFiles true
+    
+    # Show path bar
+    defaults write com.apple.finder ShowPathbar -bool true
+    
+    # Show status bar
+    defaults write com.apple.finder ShowStatusBar -bool true
+    
+    # Restart Finder to apply changes
+    killall Finder
+    
+    echo "Finder preferences updated!"
+}
+
+check_finder_setting() {
+    local domain="$1"
+    local key="$2"
+    local description="$3"
+    local value=$(defaults read "$domain" "$key" 2>/dev/null || echo "not set")
+    printf "%-30s: %s\n" "$description" "$value"
+}
+
+configure_finder
+
+echo "Current Finder Settings:"
+echo "----------------------------------------"
+
+# Show Hidden Files
+check_finder_setting "com.apple.Finder" "AppleShowAllFiles" "Show Hidden Files"
+
+# Show Path Bar
+check_finder_setting "com.apple.finder" "ShowPathbar" "Show Path Bar"
+
+# Show Status Bar
+check_finder_setting "com.apple.finder" "ShowStatusBar" "Show Status Bar"
+
+# Show Sidebar
+check_finder_setting "com.apple.finder" "ShowSidebar" "Show Sidebar"
+
+# Show Preview Pane
+check_finder_setting "com.apple.finder" "ShowPreviewPane" "Show Preview Pane"
+
+# Show Tab Bar
+check_finder_setting "com.apple.finder" "ShowTabView" "Show Tab Bar"
+
+# Keep folders on top
+check_finder_setting "com.apple.finder" "_FXSortFoldersFirst" "Keep Folders on Top"
+
+# Default view style (icnv, Nlsv, clmv, Flwv)
+check_finder_setting "com.apple.finder" "FXPreferredViewStyle" "Default View Style"
+
+# Show file extensions
+check_finder_setting "NSGlobalDomain" "AppleShowAllExtensions" "Show File Extensions"
+
+echo "----------------------------------------"
+
+
+echo "Initial setup complete! 🎉"
+echo "Please restart your terminal for all changes to take effect."

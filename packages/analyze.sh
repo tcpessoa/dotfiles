@@ -1,0 +1,94 @@
+#!/bin/bash
+set -e
+
+formulae=$(brew list --formula | sort)
+casks=$(brew list --cask | sort)
+export HOST=$(hostname -s)
+
+BASE_DIR="$HOME/dotfiles/packages"
+GROUP_DIR="$BASE_DIR/group/$HOST"
+echo "scanning $GROUP_DIR"
+
+check_package() {
+    local pkg=$1
+    local found=false
+    local host_file="$GROUP_DIR/host"
+    
+    if [[ ! -d "$GROUP_DIR" ]] || [ -z "$(ls -A "$GROUP_DIR")" ]; then
+        echo "No group files found in $GROUP_DIR"
+        return 1
+    fi
+    
+    for file in "$GROUP_DIR"/*; do
+        if [[ -f "$file" || -L "$file" ]]; then
+            if grep -q "^$pkg$" "$(readlink -f "$file")" 2>/dev/null; then
+                found=true
+                break
+            fi
+        fi
+    done
+    
+    if ! $found; then
+        echo "Package '$pkg' not found in any group file."
+        echo "Options:"
+        echo "1. Skip"
+        echo "2. Uninstall"
+        
+        # Dynamically list group files, excluding symlinks for writing
+        group_files=()
+        while IFS= read -r file; do
+            # Only include regular files for package addition
+            if [[ -f "$file" && ! -L "$file" ]]; then
+                group_files+=("$file")
+            fi
+        done < <(find "$GROUP_DIR" -maxdepth 1 -type f)
+        
+        # Show available files for adding packages, usually host
+        for i in "${!group_files[@]}"; do
+            echo "$((i+3)). Add to ${group_files[$i]##*/}"
+        done
+        
+        read -p "Enter your choice (1-$((${#group_files[@]}+2))): " choice
+        
+        case $choice in
+            1)
+                echo "Skipped '$pkg'"
+                ;;
+            2)
+                if echo "$casks" | grep -q "^$pkg$"; then
+                    brew uninstall --cask "$pkg"
+                else
+                    brew uninstall --formula "$pkg"
+                fi
+                echo "Uninstalled '$pkg'"
+                ;;
+            *)
+                if [ "$choice" -ge 3 ] && [ "$choice" -le $((${#group_files[@]}+2)) ]; then
+                    selected_file="${group_files[$((choice-3))]}"
+                    if [[ -L "$selected_file" ]]; then
+                        echo "Cannot add to symlinked file '$selected_file'. Please choose a regular file."
+                    else
+                        echo "$pkg" >> "$selected_file"
+                        echo "Added '$pkg' to ${selected_file##*/}"
+                    fi
+                else
+                    echo "Invalid choice. Skipped '$pkg'"
+                fi
+                ;;
+        esac
+        echo "----------------------------------------"
+    fi
+}
+
+# Create group directory if it doesn't exist
+mkdir -p "$GROUP_DIR"
+
+echo "Checking formulae..."
+for pkg in $formulae; do
+    check_package "$pkg"
+done
+
+echo "Checking casks..."
+for pkg in $casks; do
+    check_package "$pkg"
+done

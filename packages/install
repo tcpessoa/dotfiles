@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+
+# Exit on error, unset variable, or pipe failure
+set -euo pipefail
+
+# Get hostname for host-specific configurations
+HOST=$(hostname -s)
+
+# Use regular arrays instead of associative arrays
+special_install_packages=(rust nvm uv tms pnpm angular-cli)
+special_install_commands=(
+    'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh'
+    'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+    'curl -LsSf https://astral.sh/uv/install.sh | sh'
+    'cargo install tmux-sessionizer'
+    'npm install -g pnpm'
+    'npm install -g @angular/cli'
+)
+
+# Array of cask packages
+cask_packages=(
+    firefox
+    ghostty
+    postman
+    visual-studio-code
+    docker
+    rectangle
+    caffeine
+    karabiner-elements
+    dbeaver-community
+)
+
+# Helper function to get special install command
+get_special_install() {
+    local package=$1
+    for i in "${!special_install_packages[@]}"; do
+        if [ "${special_install_packages[$i]}" = "$package" ]; then
+            echo "${special_install_commands[$i]}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Helper function to check if package is a cask
+is_cask() {
+    local package=$1
+    for cask in "${cask_packages[@]}"; do
+        if [ "$cask" = "$package" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Check if a package is already installed
+is_installed() {
+    local package=$1
+    
+    # Check special installs
+    case $package in
+        rust)
+            command -v rustc >/dev/null 2>&1
+            return
+            ;;
+        nvm)
+            # Check for NVM directory
+            [ -d "$HOME/.nvm" ]
+            return
+            ;;
+        uv)
+            command -v uv >/dev/null 2>&1
+            return
+            ;;
+        tms)
+            command -v tms >/dev/null 2>&1
+            return
+            ;;
+        pnpm)
+            command -v pnpm >/dev/null 2>&1
+            return
+            ;;
+        angular-cli)
+            command -v ng >/dev/null 2>&1
+            return
+            ;;
+    esac
+    
+    # Check brew packages
+    if is_cask "$package"; then
+        brew list --cask | grep -q "^${package}\$"
+    else
+        brew list | grep -q "^${package}\$"
+    fi
+}
+
+install_package() {
+    local package=$1
+    
+    # Skip if already installed
+    if is_installed "$package"; then
+        echo "✓ $package is already installed"
+        return
+    fi
+    
+    # Check for special install
+    local special_cmd
+    if special_cmd=$(get_special_install "$package"); then
+        echo "Installing $package using custom method..."
+        if eval "$special_cmd"; then
+            echo "✓ Successfully installed $package"
+        else
+            echo "❌ Failed to install $package"
+            return 1
+        fi
+        return
+    fi
+    
+    # Install casks or formulas
+    if is_cask "$package"; then
+        echo "Installing cask $package..."
+        if brew install --cask "$package"; then
+            echo "✓ Successfully installed cask $package"
+        else
+            echo "❌ Failed to install cask $package"
+            return 1
+        fi
+    else
+        echo "Installing formula $package..."
+        if brew install "$package"; then
+            echo "✓ Successfully installed formula $package"
+        else
+            echo "❌ Failed to install formula $package"
+            return 1
+        fi
+    fi
+}
+
+install_from_file() {
+    local file=$1
+    if [ -f "$file" ]; then
+        echo "Installing packages from: $file"
+        while IFS= read -r package || [[ -n "$package" ]]; do
+            # Skip empty lines and comments
+            [[ -z "$package" || "$package" =~ ^# ]] && continue
+            install_package "$package" || echo "Failed to install $package, continuing..."
+        done < "$file"
+        return 0
+    fi
+    return 1
+}
+
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Install packages base
+HOST_BASE_FILE="${SCRIPT_DIR}/group/${HOST}/base"
+echo "Installing BASE from: $HOST_BASE_FILE"
+if [ -f "$HOST_BASE_FILE" ]; then
+    install_from_file "$HOST_BASE_FILE"
+fi
+
+# Install packages from host-specific files (if any exist)
+HOST_DIR="${SCRIPT_DIR}/group/${HOST}"
+echo "Installing packages from: $HOST_DIR"
+if [ -d "$HOST_DIR" ]; then
+    for file in "$HOST_DIR"/*; do
+        echo "-- Installing packages from: $file"
+        if [ -f "$file" ] && [ "$(basename "$file")" != "base" ]; then
+            install_from_file "$file"
+        fi
+    done
+fi
+
+if [ -f "${SCRIPT_DIR}/health.zsh" ]; then
+    echo "Running health check..."
+    ./health.zsh
+else
+    echo "Health check script not found, skipping..."
+fi
+
+echo "Package installation complete!"

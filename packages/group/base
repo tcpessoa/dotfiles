@@ -1,0 +1,30 @@
+# Core utilities
+neovim
+tmux
+stow
+tree
+fzf
+jq
+ripgrep
+fd
+bat
+git-delta
+eza
+grc
+btop
+lazygit
+
+# Development tools
+bun
+pyenv
+starship
+docker
+
+# Special installs (will be handled by script)
+tms
+nvm
+
+# Kubernetes tools
+kubernetes-cli
+kubectx
+
