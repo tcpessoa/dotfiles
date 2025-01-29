@@ -1,7 +1,9 @@
 # dotfiles management
 
 This repo is to manage dotfiles and installing them using stow.
-It accomodates personal and work configurations for gitconfig and zsh.
+It accomodates:
+- personal and work configurations for gitconfig and zsh.
+- packages installation by host
 
 # MAC OS base installation
 
@@ -15,6 +17,12 @@ Run this for base installation (oh my zsh, homebrew, finder, etc):
 
 ```sh
 ./packages/install
+```
+
+If there are ad hoc installed packages in the host that are not synced to a file, run:
+
+```sh
+./packages/analyze
 ```
 
 # Stow all home configs
