@@ -1,0 +1,82 @@
+#!/bin/bash
+
+check_tool() {
+    local tool=$1
+    local command=$2
+    echo -n "Checking for $tool..."
+    if [[ $tool == "ripgrep" ]]; then
+        # Special case for ripgrep
+        if command -v rg > /dev/null; then
+            local version=$(rg --version | head -1)
+            echo " FOUND: $version"
+        else
+            echo " NOT FOUND"
+            missing_tools+=("$tool")
+        fi
+    elif command -v "$tool" > /dev/null; then
+        local version=$(eval "$command")
+        echo " FOUND: $version"
+    else
+        echo " NOT FOUND"
+        missing_tools+=("$tool")
+    fi
+}
+
+tools=(
+    "fzf"
+    "jq"
+    "ripgrep"
+    "fd"
+    "bat"
+    "kubectl"
+    "docker"
+    "delta"
+    "eza"
+    "node"
+    "npm"
+    "bun"
+    "starship"
+    "pyenv"
+    "tms"
+)
+
+commands=(
+    "fzf --version"
+    "jq --version"
+    "rg --version"
+    "fd --version"
+    "bat --version"
+    "kubectl version --client"
+    "docker --version"
+    "delta --version"
+    "eza --version"
+    "node --version"
+    "npm --version"
+    "bun --version"
+    "starship --version"
+    "pyenv --version"
+    "tms --version"
+)
+
+echo -n "Checking for nvm..."
+if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
+    source "$HOME/.nvm/nvm.sh"
+    nvm --version && echo " FOUND: $(nvm --version)" || echo " NOT FOUND"
+else
+    echo " NOT FOUND"
+    missing_tools+=("nvm")
+fi
+
+missing_tools=()
+for i in "${!tools[@]}"; do
+    check_tool "${tools[$i]}" "${commands[$i]}"
+done
+
+echo -e "\n---> Check for [kubectx, grc] manually, it doesn't have a version command"
+
+if [ ${#missing_tools[@]} -gt 0 ]; then
+    echo "The following tools are missing: ${missing_tools[*]}"
+    echo "Please install them to ensure proper functionality."
+else
+    echo "All tools are installed and ready."
+fi

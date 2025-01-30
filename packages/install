@@ -125,7 +125,8 @@ install_package() {
 install_from_file() {
     local file=$1
     if [ -f "$file" ]; then
-        echo "Installing packages from: $file"
+        relative_path=${file#"$SCRIPT_DIR/"}
+        echo "Installing packages from: $relative_path"
         while IFS= read -r package || [[ -n "$package" ]]; do
             # Skip empty lines and comments
             [[ -z "$package" || "$package" =~ ^# ]] && continue
@@ -155,9 +156,9 @@ if [ -d "$HOST_DIR" ]; then
     done
 fi
 
-if [ -f "${SCRIPT_DIR}/health.zsh" ]; then
+if [ -f "${SCRIPT_DIR}/health" ]; then
     echo "Running health check..."
-    if zsh "${SCRIPT_DIR}/health.zsh"; then
+    if bash "${SCRIPT_DIR}/health"; then
         echo "✅ Health check passed"
     else
         echo "❌ Health check failed"
