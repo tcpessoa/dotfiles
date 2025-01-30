@@ -66,6 +66,10 @@ format = '[$symbol\[[$context](bold fg:purple) $namespace\]](fg:bright-blue) '
 disabled = false
 ```
 
+# Useful LLM context
+
+`{ tree -a -I '.git|tmux' && echo && tree -d -L 2 .; } | pbcopy`
+
 # Neovim
 
 Managed in other [repo](https://github.com/tcpessoa/kickstart.nvim)
