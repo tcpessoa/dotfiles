@@ -1,15 +1,19 @@
 !.ignore
 !.gitignore
+
 # Do not ignore .config directories at any level
 !**/.config/
 
 # Do not ignore files and directories inside any .config directory
 !**/.config/*
 
+# zsh
 !zsh/.zshenv
-!zsh/.config/zsh/env_work.zsh
 !zsh/.config/zsh/env.local
 
-# Git
+# git
 !git/.gitconfig
 !git/.gitconfig-work-example
+
+# bin local scripts
+!bin/.local/
