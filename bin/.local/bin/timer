@@ -20,7 +20,7 @@ format_time() {
 
 play_sound() {
     if command -v afplay &>/dev/null; then
-        # macOS
+        # macOS (Glass, Blow, Sosumi)
         afplay /System/Library/Sounds/Glass.aiff &
     elif command -v paplay &>/dev/null; then
         # Linux with PulseAudio

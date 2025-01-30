@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# Get all system sounds
 sounds=$(ls /System/Library/Sounds)
 
 echo "🔊 Testing all system sounds..."
@@ -11,5 +10,4 @@ for sound in $sounds; do
     name="${sound%.aiff}"
     echo "Playing: $name"
     afplay "/System/Library/Sounds/$sound"
-    sleep 1
 done
