@@ -1,11 +1,34 @@
 #!/bin/bash
 
 WORK_VAULT_DIR="$HOME/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
-VAULT_DIR="$HOME/code/my-vault/"
+PERSONAL_VAULT_DIR_WORK="$HOME/code/my-vault"
+PERSONAL_VAULT_DIR_HOME="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault"
+
+get_vault_path() {
+    local hostname=$(hostname)
+
+    # Work machine
+    if [[ "$hostname" == *"LT4062442416"* ]]; then
+        if [ "$1" = "-p" ] || [ "$1" = "--personal" ]; then
+            echo "$PERSONAL_VAULT_DIR_WORK/0-Inbox"
+        else
+            echo "$WORK_VAULT_DIR/0-Inbox"
+        fi
+    # Personal machine
+    else
+        echo "$PERSONAL_VAULT_DIR_HOME/0-Inbox"
+    fi
+}
 
 get_filename() {
-    read -p "Enter a filename: " filename
-    echo "$(date +%Y%m%d)-$filename"
+    local date_prefix=$(date +%Y%m%d)
+    if [ -n "$1" ]; then
+        echo "${date_prefix}-$1"
+    else
+        local input
+        read -p "Enter a filename: " input
+        echo "${date_prefix}-$input"
+    fi
 }
 
 create_note() {
@@ -13,7 +36,7 @@ create_note() {
     local filename="$2"
     local file_path="$target_dir/$filename.md"
     
-    mkdir -p "$target_dir" || { echo "Failed to create directory: $target_dir"; exit 1; }
+    mkdir -p "$target_dir" || { echo "Error: Failed to create directory: $target_dir"; exit 1; }
     
     cat > "$file_path" << EOF
 ---
@@ -24,57 +47,41 @@ created: $(date +"%Y-%m-%d %H:%M")
 
 EOF
     
-    # Position cursor on the empty line after the title
     nvim "+4" "+normal j" "+startinsert" "$file_path"
 }
 
-determine_vault() {
-    if [[ "$1" == "-p" ]]; then
-        echo "$VAULT_DIR/0-Inbox"
-    elif [[ "$(hostname)" == *"LT4062442416"* ]] || [[ -n "$WORK_ENV" ]]; then
-        echo "$WORK_VAULT_DIR/0-Inbox"
-    else
-        echo "$WORK_VAULT_DIR/0-Inbox"
-    fi
-}
-
 main() {
-    local target_vault
-    local filename
-    local date_prefix=$(date +%Y%m%d)
-    
-    if [[ "$1" == "-p" ]]; then
-        target_vault=$(determine_vault "-p")
+    local target_dir filename name_input
+
+    if [ "$1" = "-p" ] || [ "$1" = "--personal" ]; then
+        target_dir=$(get_vault_path "-p")
         shift
     else
-        target_vault=$(determine_vault)
+        target_dir=$(get_vault_path)
     fi
-    
-    if [[ ! -d "$(dirname "$target_vault")" ]]; then
-        echo "Error: Vault directory not found: $(dirname "$target_vault")"
+
+    if [ ! -d "$(dirname "$target_dir")" ]; then
+        echo "Error: Vault directory not found: $(dirname "$target_dir")"
         exit 1
     fi
-    
-    case $# in
-        0)  filename=$(get_filename)
-            ;;
-        1)  filename="${date_prefix}-$1"
-            ;;
-        *)  echo "Usage: $(basename "$0") [-p] [filename]"
-            echo "  -p: Use personal vault"
-            echo "  filename: Note name (optional, will prompt if not provided)"
-            echo "Example: $(basename "$0") my-new-note"
-            echo "  creates: ${date_prefix}-my-new-note.md"
-            exit 1
-            ;;
-    esac
-    
+
+    filename=$(get_filename "$1")
+
     if [[ ! "${filename#*-}" =~ ^[a-zA-Z0-9_-]+$ ]]; then
         echo "Error: Filename can only contain letters, numbers, underscores, and hyphens"
         exit 1
     fi
-    
-    create_note "$target_vault" "$filename"
+
+    create_note "$target_dir" "$filename"
 }
+
+if [ "$#" -gt 2 ]; then
+    echo "Usage: $(basename "$0") [-p] [filename]"
+    echo "  -p: Use personal vault"
+    echo "  filename: Note name (optional, will prompt if not provided)"
+    echo "Example: $(basename "$0") my-new-note"
+    echo "  creates: $(date +%Y%m%d)-my-new-note.md"
+    exit 1
+fi
 
 main "$@"
