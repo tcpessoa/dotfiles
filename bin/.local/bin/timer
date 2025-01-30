@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+
+cleanup() {
+    printf "\nTimer cancelled.\n"
+    exit 0
+}
+
+format_time() {
+    local total_secs=$1
+    local hours=$((total_secs / 3600))
+    local mins=$(((total_secs % 3600) / 60))
+    local secs=$((total_secs % 60))
+    
+    if [ $hours -gt 0 ]; then
+        printf "%02d:%02d:%02d" $hours $mins $secs
+    else
+        printf "%02d:%02d" $mins $secs
+    fi
+}
+
+play_sound() {
+    if command -v afplay &>/dev/null; then
+        # macOS
+        afplay /System/Library/Sounds/Glass.aiff &
+    elif command -v paplay &>/dev/null; then
+        # Linux with PulseAudio
+        paplay /usr/share/sounds/freedesktop/stereo/complete.oga &
+    elif command -v aplay &>/dev/null; then
+        # Linux with ALSA
+        aplay -q /usr/share/sounds/sound-icons/complete.wav &
+    fi
+}
+
+# Set up interrupt handler
+trap cleanup SIGINT SIGTERM
+
+minutes=$1
+message=${2:-"Time's up!"}
+
+if [[ ! $minutes =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    echo "Usage: timer <minutes> [message]"
+    echo "Example: timer 25 'Take a break!'"
+    echo "Note: Minutes can be a decimal number (e.g., 0.5 for 30 seconds)"
+    exit 1
+fi
+
+# Convert minutes to seconds, handling decimal values
+seconds=$(awk "BEGIN {print int($minutes * 60)}")
+start_time=$(date +%s)
+end_time=$((start_time + seconds))
+
+echo "🍅 Timer started for $(format_time $seconds)..."
+
+while [ $(date +%s) -lt $end_time ]; do
+    current_time=$(date +%s)
+    remaining=$((end_time - current_time))
+    formatted_time=$(format_time $remaining)
+    
+    # display progress bar
+    total_width=30
+    progress_width=$(( (seconds - remaining) * total_width / seconds ))
+    printf "\r⏰ %s [" "$formatted_time"
+    for ((i = 0; i < total_width; i++)); do
+        if [ $i -lt $progress_width ]; then
+            printf "="
+        else
+            printf " "
+        fi
+    done
+    printf "] %d%%" $(( (seconds - remaining) * 100 / seconds ))
+    
+    sleep 1
+done
+
+formatted_time="00:00"
+printf "\r⏰ %s [" "$formatted_time"
+for ((i = 0; i < total_width; i++)); do
+    printf "="
+done
+printf "] 100%%\n"
+
+printf "$message\n"
+
+# Play sound
+play_sound
+
+# send notification
+if command -v osascript &>/dev/null; then
+    # macOS (without sound since play_sound handles it)
+    osascript -e 'display notification "'"$message"'" with title "Timer"'
+elif command -v notify-send &>/dev/null; then
+    # Linux with notify-send
+    notify-send "Timer" "$message"
+elif command -v zenity &>/dev/null; then
+    # Linux with Zenity (fallback)
+    zenity --notification --text="$message"
+fi

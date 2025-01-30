@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# review-changes - Show all changes made today across git repos
+
+show_all=false
+date=$(date +%Y-%m-%d)
+author=$(git config user.email)
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -a|--all) show_all=true; shift ;;
+        -h|--help)
+            echo "Usage: review-changes [options] [date] [author]"
+            echo "Options:"
+            echo "  -a, --all    Show all changes (including unstaged)"
+            echo "  -h, --help   Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  review-changes                              # Show today's commits"
+            echo "  review-changes -a                           # Show all changes"
+            echo "  review-changes 2024-01-29                   # Show commits for specific date"
+            echo "  review-changes 2025-01-29 'Tiago Pessoa'    # Show commits by specific author"
+            exit 0
+            ;;
+        *) 
+            if [[ $1 =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+                date=$1
+            else
+                author=$1
+            fi
+            shift ;;
+    esac
+done
+
+current_dir=$(pwd)
+found_changes=false
+
+echo "🔍 Reviewing changes for $date by $author"
+echo "----------------------------------------"
+
+is_git_repo() {
+    git -C "$1" rev-parse --is-inside-work-tree &>/dev/null
+}
+
+review_repo() {
+    local repo_path="$1"
+    local repo_name=$(basename "$repo_path")
+    
+    cd "$repo_path" || return
+    
+    local commits=$(git log --since="$date 00:00:00" --until="$date 23:59:59" \
+        --author="$author" --oneline 2>/dev/null)
+    
+    # Get unstaged changes if --all flag is used
+    local unstaged=""
+    if $show_all; then
+        unstaged=$(git status --porcelain 2>/dev/null)
+    fi
+    
+    if [[ -n "$commits" || ($show_all && -n "$unstaged") ]]; then
+        found_changes=true
+        echo "📁 $repo_name:"
+        
+        if [[ -n "$commits" ]]; then
+            echo "  Commits:"
+            echo "$commits" | sed 's/^/    /'
+        fi
+        
+        if $show_all && [[ -n "$unstaged" ]]; then
+            echo "  Unstaged changes:"
+            echo "$unstaged" | sed 's/^/    /'
+        fi
+        echo
+    fi
+}
+
+for dir in \
+    "$HOME/dotfiles" \
+    "$HOME/.config/nvim" \
+    "$HOME/Documents/repos_work/"*/ \
+    "$HOME/code/"*/; do
+    if [[ -d "$dir" ]] && is_git_repo "$dir"; then
+        review_repo "$dir"
+    fi
+done
+
+# Also check current directory if it's a git repo and not already checked
+if [[ "$current_dir" != "$HOME/dotfiles" ]] && \
+   [[ "$current_dir" != "$HOME/.config/nvim" ]] && \
+   [[ ! "$current_dir" =~ ^$HOME/Documents/repos_work/ ]] && \
+   [[ ! "$current_dir" =~ ^$HOME/code/ ]] && \
+   is_git_repo "$current_dir"; then
+    review_repo "$current_dir"
+fi
+
+cd "$current_dir" || exit
+
+if ! $found_changes; then
+    echo "No changes found for $date"
+fi
