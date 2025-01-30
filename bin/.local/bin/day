@@ -1,97 +1,63 @@
 #!/bin/bash
 
 WORK_VAULT_DIR="$HOME/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
-VAULT_DIR="$HOME/code/my-vault/"
+PERSONAL_VAULT_DIR_WORK="$HOME/code/my-vault"
+PERSONAL_VAULT_DIR_HOME="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault"
 
-determine_vault_type() {
-    if [[ "$1" == "-p" ]]; then
-        echo "personal"
-    elif [[ "$(hostname)" == *"LT4062442416"* ]] || [[ -n "$WORK_ENV" ]]; then
-        echo "work"
-    else
-        echo "work"
+get_vault_config() {
+    local use_personal=false
+    local hostname=$(hostname)
+
+    if [ "$1" = "-p" ] || [ "$1" = "--personal" ]; then
+        use_personal=true
     fi
-}
 
-create_daily_note() {
-    local vault_type="$1"
-    local daily_dir
-    local template_path
-    
-    case "$vault_type" in
-        "work")
-            daily_dir="$WORK_VAULT_DIR/daily"
-            template_path="$WORK_VAULT_DIR/templates/daily-v.md"
-            ;;
-        "personal")
-            daily_dir="$VAULT_DIR/00-zet/daily"
-            template_path="$VAULT_DIR/templates/daily.md"
-            ;;
-        *)
-            echo "Error: Invalid vault type. Use 'work' or 'personal'"
-            exit 1
-            ;;
-    esac
-    
-    mkdir -p "$daily_dir"
-    
-    local today=$(date +"%Y-%m-%d")
-    local yesterday=$(date -v-1d +"%y-%m-%d")
-    local tomorrow=$(date -v+1d +"%y-%m-%d")
-    local filename="$daily_dir/$today.md"
-    
-    if [[ -f "$filename" ]]; then
-        echo "Today's note already exists in $vault_type vault. Opening existing file."
-    else
-        if [[ -f "$template_path" ]]; then
-            eval "cat << EOF
-$(cat "$template_path")
-EOF" > "$filename"
-            echo "Created new daily note for $today"
+    # Work machine
+    if [[ "$hostname" == *"LT4062442416"* ]]; then
+        if [ "$use_personal" = true ]; then
+            echo "$PERSONAL_VAULT_DIR_WORK:daily:templates/daily-vim.md"
         else
-            echo "Error: Template not found at $template_path"
-            exit 1
+            echo "$WORK_VAULT_DIR:daily:templates/daily-vim.md"
         fi
+    # Personal machine
+    else
+        echo "$PERSONAL_VAULT_DIR_HOME:daily:templates/daily-vim.md"
     fi
-    
-    nvim "+ normal ggzzi" "$filename"
 }
 
 main() {
-    local vault_type
-    
-    if [[ ! -d "$WORK_VAULT_DIR" && ! -d "$VAULT_DIR" ]]; then
-        echo "Error: Neither work nor personal vault directories found"
+    # Parse config string (DIR:DAILY_PATH:TEMPLATE_PATH)
+    local config=$(get_vault_config "$1")
+    local vault_dir=$(echo "$config" | cut -d: -f1)
+    local daily_path=$(echo "$config" | cut -d: -f2)
+    local template_path=$(echo "$config" | cut -d: -f3)
+
+    if [ ! -d "$vault_dir" ]; then
+        echo "Error: Vault directory not found: $vault_dir"
         exit 1
     fi
-    
-    if [[ "$1" == "-p" ]]; then
-        vault_type="personal"
-        shift
-    else
-        vault_type=$(determine_vault_type)
-    fi
-    
-    if [[ "$vault_type" == "work" && ! -d "$WORK_VAULT_DIR" ]]; then
-        echo "Error: Work vault directory not found"
-        exit 1
-    fi
-    
-    if [[ "$vault_type" == "personal" && ! -d "$VAULT_DIR" ]]; then
-        echo "Error: Personal vault directory not found"
-        exit 1
-    fi
-    
-    case $# in
-        0)  ;;
-        *)  echo "Usage: $(basename "$0") [-p]"
-            echo "  -p: Use personal vault"
-            echo "  Default: Uses work vault based on hostname or WORK_ENV"
+
+    local daily_dir="$vault_dir/$daily_path"
+    local template="$vault_dir/$template_path"
+    local today=$(date +"%Y-%m-%d")
+    local note="$daily_dir/$today.md"
+
+    mkdir -p "$daily_dir"
+
+    if [ ! -f "$note" ]; then
+        if [ ! -f "$template" ]; then
+            echo "Error: Template not found: $template"
             exit 1
-            ;;
-    esac
-    
-    create_daily_note "$vault_type"
+        fi
+        eval "cat << EOF
+$(cat "$template")
+EOF" > "$note"
+        echo "Created new daily note for $today"
+    else
+        echo "Opening existing note for $today"
+    fi
+
+    nvim "+7" "+normal j" "$note"
 }
 
 main "$@"
