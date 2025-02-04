@@ -57,7 +57,7 @@ EOF" > "$note"
         echo "Opening existing note for $today"
     fi
 
-    nvim "+7" "+normal j" "$note"
+    nvim "+cd $(printf %q "$vault_dir")" "+7" "+normal j" "$note"
 }
 
 main "$@"

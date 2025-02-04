@@ -47,7 +47,9 @@ created: $(date +"%Y-%m-%d %H:%M")
 
 EOF
     
-    nvim "+4" "+normal j" "+startinsert" "$file_path"
+    local vault_dir=$(dirname "$target_dir") # Remove the trailing /0-Inbox
+
+    nvim "+cd $(printf %q "$vault_dir")" "+4" "+normal j" "+startinsert" "$file_path"
 }
 
 main() {
