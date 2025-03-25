@@ -6,10 +6,10 @@ export HISTSIZE=10000
 export SAVEHIST=10000
 
 # PATH
-export PATH="$HOME/.rd/bin:$PATH" ### Rancher Desktop
-export PATH="/opt/homebrew/bin:$PATH"
-export PATH="$PATH:$HOME/.local/bin"
-export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/.rd/bin:$PATH" # Rancher Desktop
+export PATH="/opt/homebrew/bin:$PATH" # Homebrew M chip install
+eval "$(/opt/homebrew/bin/brew shellenv)" # Homebrew env vars
+export PATH="$PATH:$HOME/.local/bin" # My custom bin scrips - `bin/.local/bin/`
 
 # Rust setup
 . "$HOME/.cargo/env"
