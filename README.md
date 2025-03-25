@@ -25,6 +25,14 @@ If there are ad hoc installed packages in the host that are not synced to a file
 ./packages/analyze
 ```
 
+> [!note] Host commands on mac os
+> ```sh
+> scutil --get ComputerName
+> scutil --get LocalHostName
+> scutil --get HostName
+> sudo scutil --set HostName axiom.local
+> ```
+
 # Stow all home configs
 
 In order to create the symlinks run:
@@ -48,23 +56,6 @@ cp git/.gitconfig-work-example ~/.gitconfig-work
 ```
 
 - This configuration assumes that the work repos will be in `~/Documents/work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
-
-
-# Starship
-
-At work I add for kubernetes:
-
-```toml
-format = """
-(...)
-$kubernetes\
-(...)
-"""
-(...)
-[kubernetes]
-format = '[$symbol\[[$context](bold fg:purple) $namespace\]](fg:bright-blue) '
-disabled = false
-```
 
 # Useful LLM context
 
