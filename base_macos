@@ -51,13 +51,29 @@ configure_finder() {
     echo "Configuring Finder preferences..."
     
     # Show hidden files
-    defaults write com.apple.Finder AppleShowAllFiles true
+    defaults write com.apple.finder AppleShowAllFiles -bool true
     
-    # Show path bar
+    # Show path bar at bottom
     defaults write com.apple.finder ShowPathbar -bool true
     
     # Show status bar
     defaults write com.apple.finder ShowStatusBar -bool true
+    
+    # Set default Finder view to list view (Nlsv)
+    defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
+    
+    # Keep folders on top when sorting
+    defaults write com.apple.finder _FXSortFoldersFirst -bool true
+    
+    # Show all filename extensions
+    defaults write NSGlobalDomain AppleShowAllExtensions -bool true
+    
+    # Display full POSIX path as Finder window title
+    defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
+    
+    # Avoid creating .DS_Store files on network or USB volumes
+    defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+    defaults write com.apple.desktopservices DSDontWriteUSBStores -bool true
     
     # Restart Finder to apply changes
     killall Finder
@@ -65,47 +81,126 @@ configure_finder() {
     echo "Finder preferences updated!"
 }
 
-check_finder_setting() {
+configure_dock() {
+    echo "Configuring Dock preferences..."
+    
+    # Automatically hide and show the Dock
+    defaults write com.apple.dock autohide -bool true
+    
+    # Remove the auto-hiding Dock delay
+    # defaults write com.apple.dock autohide-delay -float 0
+    
+    # Don't show recent applications in Dock
+    defaults write com.apple.dock show-recents -bool false
+    
+    # Restart Dock to apply changes
+    killall Dock
+    
+    echo "Dock preferences updated!"
+}
+
+configure_system() {
+    echo "Configuring System preferences..."
+    
+    # Set a blazingly fast keyboard repeat rate
+    defaults write NSGlobalDomain KeyRepeat -int 2
+    defaults write NSGlobalDomain InitialKeyRepeat -int 15
+    
+    # Disable the "automatically rearrange Spaces based on most recent use"
+    defaults write com.apple.dock mru-spaces -bool false
+    
+    # Configure Mission Control to have number keys switch to corresponding desktop spaces
+    # First, make sure you have the right number of spaces already created
+    # Configure numbers 1-5 to switch to that desktop
+    # Map keyboard shortcuts for switching spaces
+    # This requires automation to set up properly as it's in System Preferences
+    echo "To set up keyboard shortcuts for Mission Control spaces:"
+    echo "1. Go to System Preferences > Keyboard > Shortcuts > Mission Control"
+    echo "2. Enable 'Switch to Desktop 1' through 'Switch to Desktop 5'"
+    echo "3. Set the keyboard shortcuts to Control+1 through Control+5"
+    
+    # Restart SystemUIServer to apply changes
+    killall SystemUIServer
+    
+    echo "System preferences updated!"
+}
+
+print_finder_settings() {
+    echo "Current Finder Settings:"
+    echo "----------------------------------------"
+    
+    # Show Hidden Files
+    check_setting "com.apple.finder" "AppleShowAllFiles" "Show Hidden Files"
+    
+    # Show Path Bar
+    check_setting "com.apple.finder" "ShowPathbar" "Show Path Bar"
+    
+    # Show Status Bar
+    check_setting "com.apple.finder" "ShowStatusBar" "Show Status Bar"
+    
+    # Default view style (icnv, Nlsv, clmv, Flwv)
+    check_setting "com.apple.finder" "FXPreferredViewStyle" "Default View Style"
+    
+    # Keep folders on top
+    check_setting "com.apple.finder" "_FXSortFoldersFirst" "Keep Folders on Top"
+    
+    # Show file extensions
+    check_setting "NSGlobalDomain" "AppleShowAllExtensions" "Show File Extensions"
+    
+    # Display full POSIX path in title
+    check_setting "com.apple.finder" "_FXShowPosixPathInTitle" "Show POSIX Path in Title"
+    
+    # Avoid creating .DS_Store files on network or USB
+    check_setting "com.apple.desktopservices" "DSDontWriteNetworkStores" "Don't Write .DS_Store on Network"
+}
+
+print_dock_settings() {
+    echo "Current Dock Settings:"
+    echo "----------------------------------------"
+    
+    # Auto hide dock
+    check_setting "com.apple.dock" "autohide" "Auto-hide Dock"
+    
+    # Auto-hide delay
+    check_setting "com.apple.dock" "autohide-delay" "Auto-hide Delay"
+    
+    # Show recent applications
+    check_setting "com.apple.dock" "show-recents" "Show Recent Applications"
+}
+
+print_system_settings() {
+    echo "Current System Settings:"
+    echo "----------------------------------------"
+    
+    # Keyboard settings
+    check_setting "NSGlobalDomain" "KeyRepeat" "Key Repeat Rate"
+    check_setting "NSGlobalDomain" "InitialKeyRepeat" "Initial Key Repeat"
+    
+    # Mission Control spaces
+    check_setting "com.apple.dock" "mru-spaces" "Auto-arrange Spaces"
+}
+
+# Check settings
+check_setting() {
     local domain="$1"
     local key="$2"
     local description="$3"
     local value=$(defaults read "$domain" "$key" 2>/dev/null || echo "not set")
-    printf "%-30s: %s\n" "$description" "$value"
+    printf "%-35s: %s\n" "$description" "$value"
 }
 
-configure_finder
+# configure_finder
+# configure_dock
+# configure_system
 
-echo "Current Finder Settings:"
-echo "----------------------------------------"
+print_finder_settings
+echo ""
+print_dock_settings
+echo ""
+print_system_settings
+echo ""
 
-# Show Hidden Files
-check_finder_setting "com.apple.Finder" "AppleShowAllFiles" "Show Hidden Files"
-
-# Show Path Bar
-check_finder_setting "com.apple.finder" "ShowPathbar" "Show Path Bar"
-
-# Show Status Bar
-check_finder_setting "com.apple.finder" "ShowStatusBar" "Show Status Bar"
-
-# Show Sidebar
-check_finder_setting "com.apple.finder" "ShowSidebar" "Show Sidebar"
-
-# Show Preview Pane
-check_finder_setting "com.apple.finder" "ShowPreviewPane" "Show Preview Pane"
-
-# Show Tab Bar
-check_finder_setting "com.apple.finder" "ShowTabView" "Show Tab Bar"
-
-# Keep folders on top
-check_finder_setting "com.apple.finder" "_FXSortFoldersFirst" "Keep Folders on Top"
-
-# Default view style (icnv, Nlsv, clmv, Flwv)
-check_finder_setting "com.apple.finder" "FXPreferredViewStyle" "Default View Style"
-
-# Show file extensions
-check_finder_setting "NSGlobalDomain" "AppleShowAllExtensions" "Show File Extensions"
-
-echo "----------------------------------------"
+echo "Done."
 
 
 echo "Initial setup complete! 🎉"
