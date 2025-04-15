@@ -2,45 +2,42 @@
 
 # JSON configuration as a heredoc
 # when a path has no depth specified, it is treated as a direct repository
-read -r -d '' CONFIG << 'ENDCONFIG'
+# Note: using 'EOF' instead of 'ENDCONFIG' to allow variable expansion
+read -r -d '' CONFIG << EOF
 {
   "repos": [
     {
-      "path": "~/.config/nvim"
+      "path": "$HOME/.config/nvim"
     },
     {
-      "path": "~/dotfiles"
+      "path": "$HOME/dotfiles"
     },
     {
-      "path": "~/code",
+      "path": "$HOME/code",
       "depth": 1
     },
     {
-      "path": "~/Documents/repos_work",
+      "path": "$HOME/Documents/repos_work",
       "depth": 1
     },
     {
-      "path": "~/Library/Mobile Documents/iCloud~md~obsidian/Documents",
-      "depth": 1
+      "path": "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault"
     },
     {
-      "path": "~/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
+      "path": "$HOME/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
     }
   ]
 }
-ENDCONFIG
+EOF
 
 get_repos_and_dirs_from_config() {
     if ! command -v jq &> /dev/null; then
         echo "jq is required but not installed. Please install jq to parse JSON." >&2
-        echo "For macOS: brew install jq" >&2
-        echo "For Ubuntu/Debian: sudo apt install jq" >&2
         return 1
     fi
     
-    # jq to extract paths, replace ~ with $HOME, and normalize paths
+    # jq to extract paths and normalize paths
     echo "$CONFIG" | jq -r '.repos[].path' | 
-        sed "s|~|$HOME|g" | 
         sed 's|//|/|g' |  # Remove double slashes
         sed 's|/$||'      # Remove trailing slash
 }
@@ -60,7 +57,7 @@ tmux_select_project() {
         
         if [ -d "$repo_path" ]; then
             # Get depth for this directory from config (null means it's a direct repo)
-            dir_for_jq=$(echo "$repo_path" | sed "s|$HOME|~|g")
+            dir_for_jq="$repo_path"
             depth=$(echo "$CONFIG" | jq -r ".repos[] | select(.path | rtrimstr(\"/\") == \"$dir_for_jq\" | rtrimstr(\"/\")) | .depth")
             
             # If no depth specified, it's a direct repo
@@ -83,13 +80,11 @@ tmux_select_project() {
         fi
     done <<< "$all_repos"
     
-    # repo picker
-    selected=$(echo -e "$repo_list" | sed "s|$HOME|~|g" | fzf --reverse --prompt="Repo > ")
+    # repo picker, replace $HOME with ~ for shorter path names
+    selected=$(echo -e "$repo_list" | sed "s|^$HOME|~|g" | fzf)
+
     
     if [ -n "$selected" ]; then
-        # Expand ~ back to $HOME if present
-        selected=$(echo "$selected" | sed "s|~|$HOME|g")
-        
         session_name=$(basename "$selected" | tr . _ | tr ' ' _)
         
         tmux has-session -t="$session_name" 2>/dev/null
@@ -108,7 +103,7 @@ tmux_switch_session() {
     current_session=$(tmux display-message -p '#S')
     
     # List all sessions except the current one
-    selected=$(tmux list-sessions -F '#{session_name}' | grep -v "^$current_session\$" | fzf --reverse --prompt="Switch > ")
+    selected=$(tmux list-sessions -F '#{session_name}' | grep -v "^$current_session\$" | fzf)
     
     if [ -n "$selected" ]; then
         tmux switch-client -t="$selected"
@@ -117,7 +112,7 @@ tmux_switch_session() {
 
 # Function to show and select windows from all sessions
 tmux_select_window() {
-    selected=$(tmux list-windows -a -F '#{session_name}:#{window_index} - #{window_name}' | fzf --reverse --prompt="Window > ")
+    selected=$(tmux list-windows -a -F '#{session_name}:#{window_index} - #{window_name}' | fzf)
     
     if [ -n "$selected" ]; then
         # Extract session:window identifier
@@ -126,6 +121,17 @@ tmux_select_window() {
         tmux switch-client -t="$session_window"
     fi
 }
+
+# debug_paths() {
+#   echo "Checking paths:"
+#   echo "$CONFIG" | jq -r '.repos[].path' | while read -r path; do
+#     expanded_path=$(echo "$path" | sed "s|~|$HOME|g")
+#     echo "Path: $expanded_path"
+#     echo "Exists: $([ -d "$expanded_path" ] && echo "Yes" || echo "No")"
+#   done
+# }
+#
+# debug_paths
 
 main() {
     case "$1" in
