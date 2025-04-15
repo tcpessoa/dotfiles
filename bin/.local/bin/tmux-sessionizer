@@ -30,6 +30,11 @@ read -r -d '' CONFIG << EOF
 }
 EOF
 
+FZF_KANAGAWA_COLORS="bg+:#363646,bg:#1F1F28,spinner:#7E9CD8,hl:#957FB8,fg:#DCD7BA,header:#7AA89F,info:#7FB4CA,pointer:#FF9E64,marker:#98BB6C,fg+:#FFFFFF,prompt:#BB9AF7,hl+:#E46876"
+fzf_colored() {
+    fzf --color="${FZF_KANAGAWA_COLORS}" "$@"
+}
+
 get_repos_and_dirs_from_config() {
     if ! command -v jq &> /dev/null; then
         echo "jq is required but not installed. Please install jq to parse JSON." >&2
@@ -81,7 +86,8 @@ tmux_select_project() {
     done <<< "$all_repos"
     
     # repo picker, replace $HOME with ~ for shorter path names
-    selected=$(echo -e "$repo_list" | sed "s|^$HOME|~|g" | fzf)
+
+    selected=$(echo -e "$repo_list" | sed "s|^$HOME|~|g" | fzf_colored)
 
     
     if [ -n "$selected" ]; then
@@ -103,7 +109,7 @@ tmux_switch_session() {
     current_session=$(tmux display-message -p '#S')
     
     # List all sessions except the current one
-    selected=$(tmux list-sessions -F '#{session_name}' | grep -v "^$current_session\$" | fzf)
+    selected=$(tmux list-sessions -F '#{session_name}' | grep -v "^$current_session\$" | fzf_colored)
     
     if [ -n "$selected" ]; then
         tmux switch-client -t="$selected"
@@ -112,7 +118,7 @@ tmux_switch_session() {
 
 # Function to show and select windows from all sessions
 tmux_select_window() {
-    selected=$(tmux list-windows -a -F '#{session_name}:#{window_index} - #{window_name}' | fzf)
+    selected=$(tmux list-windows -a -F '#{session_name}:#{window_index} - #{window_name}' | fzf_colored)
     
     if [ -n "$selected" ]; then
         # Extract session:window identifier
