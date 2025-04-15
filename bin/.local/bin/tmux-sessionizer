@@ -1,0 +1,144 @@
+#!/bin/bash
+
+# JSON configuration as a heredoc
+# when a path has no depth specified, it is treated as a direct repository
+read -r -d '' CONFIG << 'ENDCONFIG'
+{
+  "repos": [
+    {
+      "path": "~/.config/nvim"
+    },
+    {
+      "path": "~/dotfiles"
+    },
+    {
+      "path": "~/code",
+      "depth": 1
+    },
+    {
+      "path": "~/Documents/repos_work",
+      "depth": 1
+    },
+    {
+      "path": "~/Library/Mobile Documents/iCloud~md~obsidian/Documents",
+      "depth": 1
+    },
+    {
+      "path": "~/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
+    }
+  ]
+}
+ENDCONFIG
+
+get_repos_and_dirs_from_config() {
+    if ! command -v jq &> /dev/null; then
+        echo "jq is required but not installed. Please install jq to parse JSON." >&2
+        echo "For macOS: brew install jq" >&2
+        echo "For Ubuntu/Debian: sudo apt install jq" >&2
+        return 1
+    fi
+    
+    # jq to extract paths, replace ~ with $HOME, and normalize paths
+    echo "$CONFIG" | jq -r '.repos[].path' | 
+        sed "s|~|$HOME|g" | 
+        sed 's|//|/|g' |  # Remove double slashes
+        sed 's|/$||'      # Remove trailing slash
+}
+
+# Function to select and create/switch to a project directory
+tmux_select_project() {
+    repo_list=""
+    
+    all_repos=$(get_repos_and_dirs_from_config)
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
+    
+    # Process each repo path
+    while IFS= read -r repo_path; do
+        repo_path=$(echo "$repo_path" | sed 's|//|/|g' | sed 's|/$||')
+        
+        if [ -d "$repo_path" ]; then
+            # Get depth for this directory from config (null means it's a direct repo)
+            dir_for_jq=$(echo "$repo_path" | sed "s|$HOME|~|g")
+            depth=$(echo "$CONFIG" | jq -r ".repos[] | select(.path | rtrimstr(\"/\") == \"$dir_for_jq\" | rtrimstr(\"/\")) | .depth")
+            
+            # If no depth specified, it's a direct repo
+            if [ -z "$depth" ] || [ "$depth" = "null" ]; then
+                # Add the repo itself to the list
+                if [ -n "$repo_list" ]; then
+                    repo_list="$repo_list\n$repo_path"
+                else
+                    repo_list="$repo_path"
+                fi
+            else
+                # Find subdirectories at the specified depth
+                sub_repos=$(fd --min-depth 1 --max-depth "$depth" --type d . "$repo_path" 2>/dev/null | sort)
+                if [ -n "$repo_list" ]; then
+                    repo_list="$repo_list\n$sub_repos"
+                else
+                    repo_list="$sub_repos"
+                fi
+            fi
+        fi
+    done <<< "$all_repos"
+    
+    # repo picker
+    selected=$(echo -e "$repo_list" | sed "s|$HOME|~|g" | fzf --reverse --prompt="Repo > ")
+    
+    if [ -n "$selected" ]; then
+        # Expand ~ back to $HOME if present
+        selected=$(echo "$selected" | sed "s|~|$HOME|g")
+        
+        session_name=$(basename "$selected" | tr . _ | tr ' ' _)
+        
+        tmux has-session -t="$session_name" 2>/dev/null
+        
+        if [ $? -eq 0 ]; then
+            tmux switch-client -t="$session_name"
+        else
+            tmux new-session -d -s="$session_name" -c="$selected"
+            tmux switch-client -t="$session_name"
+        fi
+    fi
+}
+
+# Function to switch between existing sessions
+tmux_switch_session() {
+    current_session=$(tmux display-message -p '#S')
+    
+    # List all sessions except the current one
+    selected=$(tmux list-sessions -F '#{session_name}' | grep -v "^$current_session\$" | fzf --reverse --prompt="Switch > ")
+    
+    if [ -n "$selected" ]; then
+        tmux switch-client -t="$selected"
+    fi
+}
+
+# Function to show and select windows from all sessions
+tmux_select_window() {
+    selected=$(tmux list-windows -a -F '#{session_name}:#{window_index} - #{window_name}' | fzf --reverse --prompt="Window > ")
+    
+    if [ -n "$selected" ]; then
+        # Extract session:window identifier
+        session_window=$(echo "$selected" | sed -E 's/\s-.*$//')
+        
+        tmux switch-client -t="$session_window"
+    fi
+}
+
+main() {
+    case "$1" in
+        "switch")
+            tmux_switch_session
+            ;;
+        "windows")
+            tmux_select_window
+            ;;
+        *)
+            tmux_select_project
+            ;;
+    esac
+}
+
+main "$@"
