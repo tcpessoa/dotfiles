@@ -4,11 +4,10 @@ set -euo pipefail
 
 HOST=$(hostname -s)
 
-special_install_packages=(rust nvm tms pnpm angular-cli)
+special_install_packages=(rust nvm pnpm angular-cli)
 special_install_commands=(
     'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh'
     'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
-    'cargo install tmux-sessionizer'
     'npm install -g pnpm'
     'npm install -g @angular/cli'
 )
@@ -60,10 +59,6 @@ is_installed() {
             ;;
         uv)
             command -v uv >/dev/null 2>&1
-            return
-            ;;
-        tms)
-            command -v tms >/dev/null 2>&1
             return
             ;;
         pnpm)

@@ -8,7 +8,6 @@ packages=(
   lazygit
   starship
   taskwarrior
-  tms
   tmux
   zsh
 )

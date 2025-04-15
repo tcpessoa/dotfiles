@@ -37,7 +37,6 @@ tools=(
     "bun"
     "starship"
     "pyenv"
-    "tms"
 )
 
 commands=(
@@ -55,7 +54,6 @@ commands=(
     "bun --version"
     "starship --version"
     "pyenv --version"
-    "tms --version"
 )
 
 echo -n "Checking for nvm..."
