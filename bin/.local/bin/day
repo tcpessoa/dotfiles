@@ -1,63 +1,122 @@
 #!/bin/bash
 
-WORK_VAULT_DIR="$HOME/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
-PERSONAL_VAULT_DIR_WORK="$HOME/code/my-vault"
-PERSONAL_VAULT_DIR_HOME="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault"
+read -r -d '' CONFIG_JSON << 'EOF'
+{
+  "hosts": {
+    "LT4062442416": {
+      "work": {
+        "vault": "~/Library/CloudStorage/OneDrive-G42/Obsidian Vault",
+        "daily_dir": "daily",
+        "template": "templates/daily-vim.md"
+      },
+      "personal": {
+        "vault": "~/code/my-vault",
+        "daily_dir": "daily", 
+        "template": "templates/daily-vim.md"
+      }
+    },
+    "default": {
+      "personal": {
+        "vault": "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault",
+        "daily_dir": "daily",
+        "template": "templates/daily-vim.md"
+      }
+    }
+  }
+}
+EOF
 
 get_vault_config() {
     local use_personal=false
     local hostname=$(hostname)
-
+    
     if [ "$1" = "-p" ] || [ "$1" = "--personal" ]; then
         use_personal=true
+        shift # Remove this arg so it's not passed to the next function
     fi
-
-    # Work machine
+    
+    local host_pattern="default"
     if [[ "$hostname" == *"LT4062442416"* ]]; then
-        if [ "$use_personal" = true ]; then
-            echo "$PERSONAL_VAULT_DIR_WORK:daily:templates/daily-vim.md"
-        else
-            echo "$WORK_VAULT_DIR:daily:templates/daily-vim.md"
-        fi
-    # Personal machine
-    else
-        echo "$PERSONAL_VAULT_DIR_HOME:daily:templates/daily-vim.md"
+        host_pattern="LT4062442416"
     fi
+    
+    local vault_type="work"
+    if [ "$use_personal" = true ] || [ "$host_pattern" = "default" ]; then
+        vault_type="personal"
+    fi
+    
+    if ! command -v jq &> /dev/null; then
+        echo "Error: jq is required for this script. Please install it."
+        exit 1
+    fi
+    
+    local vault_dir=$(echo "$CONFIG_JSON" | jq -r ".hosts[\"$host_pattern\"][\"$vault_type\"].vault" | sed "s|~|$HOME|g")
+    local daily_path=$(echo "$CONFIG_JSON" | jq -r ".hosts[\"$host_pattern\"][\"$vault_type\"].daily_dir")
+    local template_path=$(echo "$CONFIG_JSON" | jq -r ".hosts[\"$host_pattern\"][\"$vault_type\"].template")
+    
+    if [ "$vault_dir" = "null" ] || [ -z "$vault_dir" ]; then
+        echo "Error: Could not find vault configuration for host '$host_pattern', type '$vault_type'"
+        exit 1
+    fi
+    
+    echo "$vault_dir:$daily_path:$template_path"
 }
 
 main() {
+    local silent_mode=false
+    local args=()
+    
+    for arg in "$@"; do
+        if [ "$arg" = "-s" ] || [ "$arg" = "--silent" ]; then
+            silent_mode=true
+        else
+            args+=("$arg")
+        fi
+    done
+    
     # Parse config string (DIR:DAILY_PATH:TEMPLATE_PATH)
-    local config=$(get_vault_config "$1")
+    local config=$(get_vault_config "${args[@]}")
+    
     local vault_dir=$(echo "$config" | cut -d: -f1)
     local daily_path=$(echo "$config" | cut -d: -f2)
     local template_path=$(echo "$config" | cut -d: -f3)
-
+    
     if [ ! -d "$vault_dir" ]; then
         echo "Error: Vault directory not found: $vault_dir"
         exit 1
     fi
-
+    
     local daily_dir="$vault_dir/$daily_path"
     local template="$vault_dir/$template_path"
     local today=$(date +"%Y-%m-%d")
     local note="$daily_dir/$today.md"
-
+    
     mkdir -p "$daily_dir"
-
+    
     if [ ! -f "$note" ]; then
         if [ ! -f "$template" ]; then
             echo "Error: Template not found: $template"
             exit 1
         fi
+        
         eval "cat << EOF
 $(cat "$template")
 EOF" > "$note"
-        echo "Created new daily note for $today"
+        
+        if [ "$silent_mode" = false ]; then
+            echo "Created new daily note for $today"
+        fi
     else
-        echo "Opening existing note for $today"
+        if [ "$silent_mode" = false ]; then
+            echo "Opening existing note for $today"
+        fi
     fi
-
-    nvim "+cd $(printf %q "$vault_dir")" "+7" "+normal j" "$note"
+    
+    # NOTE: only open with Neovim if not in silent mode
+    # this is to allow to run `!day -s` in command mode within neovim
+    if [ "$silent_mode" = false ]; then
+        nvim "+cd $(printf %q "$vault_dir")" "+7" "+normal j" "$note"
+    fi
 }
 
 main "$@"
