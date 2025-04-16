@@ -93,13 +93,13 @@ tmux_select_project() {
     if [ -n "$selected" ]; then
         session_name=$(basename "$selected" | tr . _ | tr ' ' _)
         
-        tmux has-session -t="$session_name" 2>/dev/null
+        tmux has-session -t "$session_name" 2>/dev/null
         
         if [ $? -eq 0 ]; then
-            tmux switch-client -t="$session_name"
+            tmux switch-client -t "$session_name"
         else
-            tmux new-session -d -s="$session_name" -c="$selected"
-            tmux switch-client -t="$session_name"
+            tmux new-session -d -s "$session_name" -c "$selected"
+            tmux switch-client -t "$session_name"
         fi
     fi
 }
@@ -112,26 +112,14 @@ tmux_switch_session() {
     selected=$(tmux list-sessions -F '#{session_name}' | grep -v "^$current_session\$" | fzf_colored)
     
     if [ -n "$selected" ]; then
-        tmux switch-client -t="$selected"
-    fi
-}
-
-# Function to show and select windows from all sessions
-tmux_select_window() {
-    selected=$(tmux list-windows -a -F '#{session_name}:#{window_index} - #{window_name}' | fzf_colored)
-    
-    if [ -n "$selected" ]; then
-        # Extract session:window identifier
-        session_window=$(echo "$selected" | sed -E 's/\s-.*$//')
-        
-        tmux switch-client -t="$session_window"
+        tmux switch-client -t "$selected"
     fi
 }
 
 # debug_paths() {
 #   echo "Checking paths:"
 #   echo "$CONFIG" | jq -r '.repos[].path' | while read -r path; do
-#     expanded_path=$(echo "$path" | sed "s|~|$HOME|g")
+#     expanded_path=$(echo "$path")
 #     echo "Path: $expanded_path"
 #     echo "Exists: $([ -d "$expanded_path" ] && echo "Yes" || echo "No")"
 #   done
@@ -143,9 +131,6 @@ main() {
     case "$1" in
         "switch")
             tmux_switch_session
-            ;;
-        "windows")
-            tmux_select_window
             ;;
         *)
             tmux_select_project
