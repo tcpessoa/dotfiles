@@ -13,10 +13,11 @@ kubernetes-cli
 lazygit
 neovim
 nvm
-pyenv
+pnpm
 ripgrep
 rust
 starship
 stow
 tmux
 tree
+uv

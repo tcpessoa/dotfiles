@@ -4,9 +4,8 @@ grc
 helm
 kubeseal
 pipx
-pnpm
+postman
 stern
 task
 taskwarrior-tui
-uv
 yq

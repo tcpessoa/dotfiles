@@ -13,15 +13,14 @@ special_install_commands=(
 )
 
 cask_packages=(
-    firefox
-    ghostty
-    postman
-    visual-studio-code
-    rectangle
     caffeine
-    karabiner-elements
     dbeaver-community
     font-hack-nerd-font
+    ghostty
+    karabiner-elements
+    postman
+    rectangle
+    visual-studio-code
 )
 
 get_special_install() {
