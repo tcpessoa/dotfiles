@@ -87,10 +87,13 @@ tmux_select_project() {
     
     # repo picker, replace $HOME with ~ for shorter path names
 
-    selected=$(echo -e "$repo_list" | sed "s|^$HOME|~|g" | fzf_colored)
+    selected_display=$(echo -e "$repo_list" | sed "s|^$HOME|~|g" | fzf_colored)
 
     
-    if [ -n "$selected" ]; then
+    if [ -n "$selected_display" ]; then
+        # Convert displayed path (with ~) back to full path
+        selected=$(echo "$selected_display" | sed "s|^~|$HOME|g")
+
         session_name=$(basename "$selected" | tr . _ | tr ' ' _)
         
         tmux has-session -t "$session_name" 2>/dev/null
