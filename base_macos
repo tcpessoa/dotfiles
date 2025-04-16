@@ -103,8 +103,9 @@ configure_system() {
     echo "Configuring System preferences..."
     
     # Set a blazingly fast keyboard repeat rate
-    defaults write NSGlobalDomain KeyRepeat -int 2
-    defaults write NSGlobalDomain InitialKeyRepeat -int 15
+    # Still not sure about this one
+    # defaults write NSGlobalDomain KeyRepeat -int 2
+    # defaults write NSGlobalDomain InitialKeyRepeat -int 15
     
     # Disable the "automatically rearrange Spaces based on most recent use"
     defaults write com.apple.dock mru-spaces -bool false
@@ -189,9 +190,9 @@ check_setting() {
     printf "%-35s: %s\n" "$description" "$value"
 }
 
-# configure_finder
-# configure_dock
-# configure_system
+configure_finder
+configure_dock
+configure_system
 
 print_finder_settings
 echo ""
