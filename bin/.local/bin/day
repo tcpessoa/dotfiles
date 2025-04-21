@@ -50,7 +50,7 @@ get_vault_config() {
         exit 1
     fi
     
-    local vault_dir=$(echo "$CONFIG_JSON" | jq -r ".hosts[\"$host_pattern\"][\"$vault_type\"].vault" | sed "s|~|$HOME|g")
+    local vault_dir=$(echo "$CONFIG_JSON" | jq -r ".hosts[\"$host_pattern\"][\"$vault_type\"].vault" | sed "s|~|$HOME|")
     local daily_path=$(echo "$CONFIG_JSON" | jq -r ".hosts[\"$host_pattern\"][\"$vault_type\"].daily_dir")
     local template_path=$(echo "$CONFIG_JSON" | jq -r ".hosts[\"$host_pattern\"][\"$vault_type\"].template")
     
