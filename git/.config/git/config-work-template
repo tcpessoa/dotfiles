@@ -1,0 +1,8 @@
+[user]
+    email = your.name@company.com
+
+[core]
+    sshCommand = ssh -i ~/.ssh/id_work_key
+
+[url "git@git.company.com:"]
+    insteadOf = work:

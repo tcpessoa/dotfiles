@@ -49,13 +49,13 @@ export MY_KEY=sk-123
 ```
 
 # Git
-- Check the [gitconfig](./git/.gitconfig-work-example) file for an example of a work configuration. This file should be copied to `~/.gitconfig-work`:
+- Check the [gitconfig](./git/.config/git/config-work-template) file for an example of a work configuration. Make a copy and make necessary changes:
 
 ```sh
-cp git/.gitconfig-work-example ~/.gitconfig-work
+cp ./git/.config/git/config-work-template ./git/.config/git/config-work
 ```
 
-- This configuration assumes that the work repos will be in `~/Documents/work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
+- This configuration assumes that the work repos will be in `~/Documents/repos_work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
 
 # Useful LLM context
 
