@@ -7,7 +7,7 @@ HOST=$(hostname -s)
 special_install_packages=(rust nvm pnpm angular-cli)
 special_install_commands=(
     'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh'
-    'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+    'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash'
     'npm install -g pnpm'
     'npm install -g @angular/cli'
 )

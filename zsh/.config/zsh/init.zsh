@@ -1,9 +1,21 @@
+# XDG config
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+
 # zsh stuff
 export ZSH="$HOME/.oh-my-zsh"
-export XDG_CONFIG_HOME="$HOME/.config"
 export HISTFILE="$ZDOTDIR/.zsh_history"
 export HISTSIZE=10000
 export SAVEHIST=10000
+
+# apps
+export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/npmrc"
+export PYTHONHISTFILE="$XDG_STATE_HOME/python/history"
+export NODE_REPL_HISTORY="$XDG_STATE_HOME/node/repl_history"
+export LESSHISTFILE="$XDG_STATE_HOME/less/history"
+export GOPATH="$XDG_DATA_HOME/go"
 
 # PATH
 export PATH="$HOME/.rd/bin:$PATH" # Rancher Desktop
@@ -20,7 +32,7 @@ source "$HOME/.config/zsh/env.local" 2>/dev/null || true
 # Lazy load slow functions, faster shell startup
 lazy_load_nvm() {
   unset -f npm node nvm
-  export NVM_DIR=~/.nvm
+  export NVM_DIR="$XDG_DATA_HOME/nvm"
   [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
   [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
 }
