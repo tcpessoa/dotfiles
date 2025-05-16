@@ -1,5 +1,6 @@
 gui:
   scrollHeight: 7
+  nerdFontsVersion: "3"
   
   # Kanagawa Wave theme
   # theme:
@@ -79,4 +80,3 @@ git:
   paging:
     pager: "delta --dark --paging=never"
 
-nerdFontsVersion: 3
