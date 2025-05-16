@@ -1,26 +1,78 @@
 gui:
- scrollHeight: 7
- # mocha catppuccin
- theme:
-   activeBorderColor:
-     - '#89b4fa'
-     - bold
-   inactiveBorderColor:
-     - '#a6adc8'
-   optionsTextColor:
-     - '#89b4fa'
-   selectedLineBgColor:
-     - '#313244'
-   cherryPickedCommitBgColor:
-     - '#45475a'
-   cherryPickedCommitFgColor:
-     - '#89b4fa'
-   unstagedChangesColor:
-     - '#f38ba8'
-   defaultFgColor:
-     - '#cdd6f4'
-   searchingActiveBorderColor:
-     - '#f9e2af'
+  scrollHeight: 7
+  
+  # Kanagawa Wave theme
+  # theme:
+  #   activeBorderColor:
+  #     - '#7E9CD8' # fujiBlue
+  #     - bold
+  #   inactiveBorderColor:
+  #     - '#727169' # fujiGray
+  #   optionsTextColor:
+  #     - '#7FB4CA' # springBlue
+  #   selectedLineBgColor:
+  #     - '#2A2A37' # sumiInk2
+  #   cherryPickedCommitBgColor:
+  #     - '#363646' # sumiInk3
+  #   cherryPickedCommitFgColor:
+  #     - '#7FB4CA' # springBlue
+  #   unstagedChangesColor:
+  #     - '#E82424' # autumnRed
+  #   defaultFgColor:
+  #     - '#DCD7BA' # fujiWhite
+  #   searchingActiveBorderColor:
+  #     - '#DCA561' # carpYellow
+
+  # Catppuccin Mocha theme
+  theme:
+    activeBorderColor:
+      - '#89b4fa' # blue
+      - bold
+    inactiveBorderColor:
+      - '#a6adc8' # subtext0
+    optionsTextColor:
+      - '#89b4fa' # blue
+    selectedLineBgColor:
+      - '#313244' # surface0
+    cherryPickedCommitBgColor:
+      - '#45475a' # surface1
+    cherryPickedCommitFgColor:
+      - '#89b4fa' # blue
+    unstagedChangesColor:
+      - '#f38ba8' # red
+    defaultFgColor:
+      - '#cdd6f4' # text
+    searchingActiveBorderColor:
+      - '#f9e2af' # yellow
+
+  # Branch color patterns for conventional commits and JIRA tickets
+  branchColorPatterns:
+    'main': '#cba6f7' # Catppuccin flamingo
+    # Conventional commit types first (higher priority, [type]-[description])
+    '^feat': '#a6e3a1' # Catppuccin green
+    '^fix': '#f38ba8' # Catppuccin red
+    '^docs': '#89b4fa' # Catppuccin blue
+    '^style': '#cba6f7' # Catppuccin mauve
+    '^refactor': '#9399b2' # Catppuccin overlay2
+    '^test': '#f9e2af' # Catppuccin yellow
+    '^chore': '#bac2de' # Catppuccin subtext1
+    '^perf': '#fab387' # Catppuccin peach
+    
+    # JIRA ticket patterns with matching commit types ([ISSUE-ID]-[type]-[description])
+    '^[A-Z]+-\d+-feat': '#94e2d5' # Catppuccin teal
+    '^[A-Z]+-\d+-fix': '#f38ba8' # Catppuccin red
+    '^[A-Z]+-\d+-docs': '#89b4fa' # Catppuccin blue
+    '^[A-Z]+-\d+-style': '#cba6f7' # Catppuccin mauve
+    '^[A-Z]+-\d+-refactor': '#9399b2' # Catppuccin overlay2
+    '^[A-Z]+-\d+-test': '#f9e2af' # Catppuccin yellow
+    '^[A-Z]+-\d+-chore': '#bac2de' # Catppuccin subtext1
+    '^[A-Z]+-\d+-perf': '#fab387' # Catppuccin peach
+    
+    # Fallback for other JIRA tickets
+    '^[A-Z]+-\d+': '#74c7ec' # Catppuccin sapphire
+    
+  authorColors:
+    'Tiago Pessoa': '#FF9E3B' # orange
 
 git:
   # See https://github.com/jesseduffield/lazygit/blob/master/docs/Custom_Pagers.md
