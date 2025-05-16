@@ -1,4 +1,5 @@
 gui:
+ scrollHeight: 7
  # mocha catppuccin
  theme:
    activeBorderColor:
@@ -26,3 +27,4 @@ git:
   paging:
     pager: "delta --dark --paging=never"
 
+nerdFontsVersion: 3
