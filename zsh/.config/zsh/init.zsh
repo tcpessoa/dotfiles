@@ -29,20 +29,29 @@ export PATH="$PATH:$HOME/.local/bin" # My custom bin scrips - `bin/.local/bin/`
 # Load env
 source "$HOME/.config/zsh/env.local" 2>/dev/null || true
 
+# Pre-populate PATH with the latest installed Node version (for nvim and bg processes)
+if [[ -d "$XDG_DATA_HOME/nvm/versions/node" ]]; then
+  # Get the latest version (highest version number)
+  LATEST_NODE=$(ls "$XDG_DATA_HOME/nvm/versions/node" | sort -V | tail -n1)
+  NODE_BIN_DIR="$XDG_DATA_HOME/nvm/versions/node/$LATEST_NODE/bin"
+  [[ -d "$NODE_BIN_DIR" ]] && export PATH="$NODE_BIN_DIR:$PATH"
+fi
+
 # Lazy load slow functions, faster shell startup
 lazy_load_nvm() {
-  unset -f npm node nvm
+  unset -f nvm node npm npx 2>/dev/null
   export NVM_DIR="$XDG_DATA_HOME/nvm"
   [[ -s "$NVM_DIR/nvm.sh" ]] && source "$NVM_DIR/nvm.sh"
-  [ -s "$NVM_DIR/bash_completion" ] && source "$NVM_DIR/bash_completion"
+  [[ -s "$NVM_DIR/bash_completion" ]] && source "$NVM_DIR/bash_completion"
 }
+
+# lazy-loading wrappers for all Node tools
+for cmd in nvm node npm npx; do
+  eval "${cmd}() { lazy_load_nvm; ${cmd} \$@; }"
+done
 
 bindkey -v # Use vi keybindings in ZSH
 export KEYTIMEOUT=1 # Reduce key timeout, vi mode
-
-npm() { lazy_load_nvm; npm $@; }
-node() { lazy_load_nvm; node $@; }
-nvm() { lazy_load_nvm; nvm $@; }
 
 # Plugin setup
 plugins=(git docker docker-compose kubectl nvm vi-mode)
