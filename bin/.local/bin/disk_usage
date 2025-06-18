@@ -3,7 +3,7 @@
 if [[ "$(uname)" == "Darwin" ]]; then
   total_size=$(df -h /System/Volumes/Data | awk 'NR==2 {print $2}')
   
-  used_space=$(df -k | grep "/dev/disk3" | awk '{sum += $3} END {printf "%.1fGi", sum/1024/1024}')
+  used_space=$(df -k | grep "^/dev/" | grep -v tmpfs | awk '{sum += $3} END {printf "%.1fGi", sum/1024/1024}')
   
   echo "$used_space/$total_size"
 else
