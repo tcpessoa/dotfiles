@@ -62,8 +62,7 @@ tmux_select_project() {
         
         if [ -d "$repo_path" ]; then
             # Get depth for this directory from config (null means it's a direct repo)
-            dir_for_jq="$repo_path"
-            depth=$(echo "$CONFIG" | jq -r ".repos[] | select(.path | rtrimstr(\"/\") == \"$dir_for_jq\" | rtrimstr(\"/\")) | .depth")
+            depth=$(echo "$CONFIG" | jq -r ".repos[] | select((.path | tostring | rtrimstr(\"/\")) == \"$repo_path\") | .depth // null")
             
             # If no depth specified, it's a direct repo
             if [ -z "$depth" ] || [ "$depth" = "null" ]; then
