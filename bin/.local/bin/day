@@ -28,7 +28,14 @@ EOF
 
 get_vault_config() {
     local use_personal=false
-    local hostname=$(hostname)
+    if command -v scutil >/dev/null 2>&1; then
+        hostname=$(scutil --get LocalHostName 2>/dev/null)
+    fi
+
+    # Fallback to regular hostname if scutil fails
+    if [[ -z "$hostname" ]]; then
+        hostname=$(hostname)
+    fi
     
     if [ "$1" = "-p" ] || [ "$1" = "--personal" ]; then
         use_personal=true
