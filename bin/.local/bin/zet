@@ -4,19 +4,21 @@ WORK_VAULT_DIR="$HOME/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
 PERSONAL_VAULT_DIR_WORK="$HOME/code/my-vault"
 PERSONAL_VAULT_DIR_HOME="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault"
 
+TARGET_ZET_DIR="0-Inbox"
+
 get_vault_path() {
     local hostname=$(hostname)
 
     # Work machine
     if [[ "$hostname" == *"LT4062442416"* ]]; then
         if [ "$1" = "-p" ] || [ "$1" = "--personal" ]; then
-            echo "$PERSONAL_VAULT_DIR_WORK/0-Inbox"
+            echo "$PERSONAL_VAULT_DIR_WORK/$TARGET_ZET_DIR"
         else
-            echo "$WORK_VAULT_DIR/0-Inbox"
+            echo "$WORK_VAULT_DIR/$TARGET_ZET_DIR"
         fi
     # Personal machine
     else
-        echo "$PERSONAL_VAULT_DIR_HOME/0-Inbox"
+        echo "$PERSONAL_VAULT_DIR_HOME/$TARGET_ZET_DIR"
     fi
 }
 
