@@ -58,6 +58,7 @@ gui:
     '^test': '#f9e2af' # Catppuccin yellow
     '^chore': '#bac2de' # Catppuccin subtext1
     '^perf': '#fab387' # Catppuccin peach
+    '^ci': '#f2cdcd' # Catppuccin flamingo (lighter shade)
     
     # JIRA ticket patterns with matching commit types ([ISSUE-ID]-[type]-[description])
     '^[A-Z]+-\d+-feat': '#94e2d5' # Catppuccin teal
@@ -68,6 +69,7 @@ gui:
     '^[A-Z]+-\d+-test': '#f9e2af' # Catppuccin yellow
     '^[A-Z]+-\d+-chore': '#bac2de' # Catppuccin subtext1
     '^[A-Z]+-\d+-perf': '#fab387' # Catppuccin peach
+    '^[A-Z]+-\d+-ci': '#f2cdcd' # Catppuccin flamingo (lighter shade)
     
     # Fallback for other JIRA tickets
     '^[A-Z]+-\d+': '#74c7ec' # Catppuccin sapphire
@@ -80,3 +82,6 @@ git:
   paging:
     pager: "delta --dark --paging=never"
 
+# See https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md#custom-pull-request-urls
+services:
+  'gitlab.g42.ae': 'gitlab:gitlab.g42.ae'
