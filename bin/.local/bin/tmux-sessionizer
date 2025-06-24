@@ -22,9 +22,6 @@ read -r -d '' CONFIG << EOF
     },
     {
       "path": "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault"
-    },
-    {
-      "path": "$HOME/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
     }
   ]
 }
@@ -74,7 +71,7 @@ tmux_select_project() {
                 fi
             else
                 # Find subdirectories at the specified depth
-                sub_repos=$(fd --min-depth 1 --max-depth "$depth" --type d . "$repo_path" 2>/dev/null | sort)
+                sub_repos=$(fd --follow --min-depth 1 --max-depth "$depth" --type d . "$repo_path" 2>/dev/null | sort)
                 if [ -n "$repo_list" ]; then
                     repo_list="$repo_list\n$sub_repos"
                 else
