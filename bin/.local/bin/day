@@ -5,7 +5,7 @@ read -r -d '' CONFIG_JSON << 'EOF'
   "hosts": {
     "LT4062442416": {
       "work": {
-        "vault": "~/Library/CloudStorage/OneDrive-G42/Obsidian Vault",
+        "vault": "~/code/work-vault",
         "daily_dir": "daily",
         "template": "templates/daily-vim.md"
       },
@@ -17,7 +17,7 @@ read -r -d '' CONFIG_JSON << 'EOF'
     },
     "default": {
       "personal": {
-        "vault": "~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault",
+        "vault": "~/code/my-vault",
         "daily_dir": "daily",
         "template": "templates/daily-vim.md"
       }

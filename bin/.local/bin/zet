@@ -1,8 +1,8 @@
 #!/bin/bash
 
-WORK_VAULT_DIR="$HOME/Library/CloudStorage/OneDrive-G42/Obsidian Vault"
+WORK_VAULT_DIR="$HOME/code/work-vault"
 PERSONAL_VAULT_DIR_WORK="$HOME/code/my-vault"
-PERSONAL_VAULT_DIR_HOME="$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-vault"
+PERSONAL_VAULT_DIR_HOME="$HOME/code/my-vault"
 
 TARGET_ZET_DIR="0-Inbox"
 
