@@ -43,75 +43,6 @@ fpp() {
     fi
 }
 
-# git fzf tools
-# [g]it [diff]
-gdiff() {
-    local commits=$(git log --pretty=format:"%C(yellow)%h%Creset -%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset" --abbrev-commit | fzf --height 40% --reverse --multi --bind 'ctrl-s:toggle-sort' --header 'Select two commits to diff (use TAB to select).' --prompt 'Git Diff> ' --preview 'git show --color {1}' --preview-window right:50%:wrap | awk '{print $1}')
-    
-    local selected_commits=("${(@f)commits}")
-
-    if [[ ${#selected_commits[@]} -eq 2 ]]; then
-        git diff "${selected_commits[1]}".."${selected_commits[2]}"
-    else
-        echo "You need to select exactly two commits."
-    fi
-}
-
-## [g]it [f]ile [hist]ory
-gfhist() {
-    while true; do
-        local file=$(git ls-files | fzf --height 40% --reverse --prompt 'Select a file: ' --preview 'bat --color=always --line-range :500 {}')
-        if [[ -z $file ]]; then
-            echo "No file selected."
-            return
-        fi
-
-        while true; do
-            # Display commits that modified the selected file
-            local commit=$(git log --pretty=format:"%C(yellow)%h%Creset - %C(green)%cr%Creset %C(blue)%cn%Creset - %C(white)%s%Creset" -- $file | fzf --height 40% --reverse --prompt "Select a commit for $file: " --preview 'git show --color {1}')
-
-            if [[ -z $commit ]]; then
-                echo "No commit selected. Going back to file selection."
-                break
-            fi
-
-            # Extract the commit hash
-            local commit_hash=$(echo "$commit" | awk '{print $1}')
-            git diff $commit_hash^! -- $file
-
-            # Offer to go back to the commit selection or exit
-            echo "Press 'q' to go back to commit selection or any other key to choose another file."
-            read -r -k1 key
-            if [[ "$key" != 'q' ]]; then
-                break
-            fi
-        done
-    done
-}
-
-gbdiff() {
-    local current_branch=$(git branch --show-current)
-
-            # --preview 'git log --oneline --graph --color=always --abbrev-commit {1}' \
-    local target_branch=$(git branch --format='%(refname:short)' | \
-        grep -v "^${current_branch}$" | \
-        fzf --height 100% \
-            --header "Select branch to compare against ${current_branch}" \
-            --preview 'git log --graph --color=always --pretty="%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset" --stat {1}' \
-            --preview-window right:50%:wrap)
-
-    if [[ -n "$target_branch" ]]; then
-        git diff --name-only "${target_branch}".."${current_branch}" | \
-        fzf --height 100% \
-            --preview "git diff ${target_branch}..${current_branch} -- {} | delta --paging=always" \
-            --preview-window=right:65%:wrap \
-            --bind "j:down,k:up,ctrl-j:preview-down,ctrl-k:preview-up" \
-            --bind 'ctrl-d:preview-half-page-down' \
-            --bind 'ctrl-u:preview-half-page-up' \
-            --bind "enter:execute(git diff ${target_branch}..${current_branch} -- {} | delta --paging=always)" \
-            --header "Enter: full diff, Ctrl-J/K: preview, J/K: scroll, Ctrl-U/D: half page"
-    fi
-}
 
 ## --- k8s fzf tools
 ## [k]ubectl [logs]
@@ -153,7 +84,8 @@ kexec() {
     fi
 }
 
-stern_logs() {
+## [s]tern [logs]
+slogs() {
     if ! kubectl version --request-timeout='3s' &>/dev/null; then
         echo "Failed to connect to the Kubernetes cluster."
         return
