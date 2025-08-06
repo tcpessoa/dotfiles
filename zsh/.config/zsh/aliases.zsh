@@ -10,20 +10,20 @@ alias szsh="source ~/.config/zsh/.zshrc"
 alias v='nvim'
 
 ### USEFUL TERMINAL
-# [l]ist all files with git status, directories first (dot files and directories first), alpabetically
+#### [l]ist all files with git status, directories first (dot files and directories first), alpabetically
 alias l='# List all files with git status, directories first (dot files and directories first)
 eza --color=always --long --git --icons=always --no-user --no-permissions --group-directories-first --all --sort=name --time-style=long-iso'
-# ls [s]ize - Show files sorted by size (largest first), directories last
+#### ls [s]ize - Show files sorted by size (largest first), directories last
 alias lss='# Show files sorted by size (largest first), directories last
 eza --color=always --long --icons=always --no-user --no-permissions --sort size -r -a --time-style=long-iso --group-directories-last'
-# ls [s]ize [t]otal - calculates size of directories, can be slow
+#### ls [s]ize [t]otal - calculates size of directories, can be slow
 alias lsst='# Show files and directories sorted by size with directory size calculation (can be slow)
 eza --color=always --long --icons=always --no-user --no-permissions --sort size -r -a --total-size --time-style=long-iso'
-# ls [m]odified
+#### ls [m]odified
 alias lsm='# Show files sorted by modified date (newest first)
 eza --color=always --long --icons=always --no-user --no-permissions --sort modified -r -a --time-style=long-iso'
 
-# [h]istory [t]ime
+#### [h]istory [t]ime
 alias ht="fc -rlt '%Y-%m-%d %H:%M:%S' 1"
 
 ### COMMNON DIRECTORIES
@@ -62,3 +62,7 @@ alias lg='lazygit'
 
 ### TASKWARRIOR
 alias tt='taskwarrior-tui'
+
+### Utils
+#### [date] [e]nhanced
+alias datee='echo "Today 📅"; echo "- Week: $(date +%Y-W%V)"; echo "- Quarter: $(date +%Y)-Q$((($(date +%m | sed "s/^0*//") - 1) / 3 + 1))"; echo "- Month: $(date +%B)"; echo "- Left in year: $(($(date -j -f "%Y-%m-%d" "$(date +%Y)-12-31" +%j) - $(date +%j)))"'
