@@ -70,7 +70,7 @@ for i in "${!tools[@]}"; do
     check_tool "${tools[$i]}" "${commands[$i]}"
 done
 
-echo -e "\n---> Check for [kubectx, grc] manually, it doesn't have a version command"
+echo -e "\n---> Check for [kubectx] manually, it doesn't have a version command"
 
 if [ ${#missing_tools[@]} -gt 0 ]; then
     echo "The following tools are missing: ${missing_tools[*]}"
