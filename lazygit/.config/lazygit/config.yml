@@ -1,7 +1,6 @@
 gui:
   scrollHeight: 7
   nerdFontsVersion: "3"
-  
   # Kanagawa Wave theme
   # theme:
   #   activeBorderColor:
@@ -45,7 +44,6 @@ gui:
       - '#cdd6f4' # text
     searchingActiveBorderColor:
       - '#f9e2af' # yellow
-
   # Branch color patterns for conventional commits and JIRA tickets
   branchColorPatterns:
     'main': '#cba6f7' # Catppuccin flamingo
@@ -59,7 +57,6 @@ gui:
     '^chore': '#bac2de' # Catppuccin subtext1
     '^perf': '#fab387' # Catppuccin peach
     '^ci': '#f2cdcd' # Catppuccin flamingo (lighter shade)
-    
     # JIRA ticket patterns with matching commit types ([ISSUE-ID]-[type]-[description])
     '^[A-Z]+-\d+-feat': '#94e2d5' # Catppuccin teal
     '^[A-Z]+-\d+-fix': '#f38ba8' # Catppuccin red
@@ -70,18 +67,14 @@ gui:
     '^[A-Z]+-\d+-chore': '#bac2de' # Catppuccin subtext1
     '^[A-Z]+-\d+-perf': '#fab387' # Catppuccin peach
     '^[A-Z]+-\d+-ci': '#f2cdcd' # Catppuccin flamingo (lighter shade)
-    
     # Fallback for other JIRA tickets
     '^[A-Z]+-\d+': '#74c7ec' # Catppuccin sapphire
-    
   authorColors:
     'Tiago Pessoa': '#FF9E3B' # orange
-
 git:
   # See https://github.com/jesseduffield/lazygit/blob/master/docs/Custom_Pagers.md
-  paging:
-    pager: "delta --dark --paging=never"
-
+  pagers:
+    - pager: "delta --dark --paging=never"
 # See https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md#custom-pull-request-urls
 services:
   'gitlab.g42.ae': 'gitlab:gitlab.g42.ae'
