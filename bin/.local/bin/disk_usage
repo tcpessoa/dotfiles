@@ -1,11 +1,11 @@
 #!/bin/bash
 
 if [[ "$(uname)" == "Darwin" ]]; then
-  total_size=$(df -h /System/Volumes/Data | awk 'NR==2 {print $2}')
-  
-  used_space=$(df -k | grep "^/dev/" | grep -v tmpfs | awk '{sum += $3} END {printf "%.1fGi", sum/1024/1024}')
-  
-  echo "$used_space/$total_size"
+  disk_identifier=$(diskutil info / | grep "Part of Whole" | awk '{print $4}')
+  total_gb=$(diskutil info "$disk_identifier" | grep "Disk Size" | awk '{printf "%.0f", $3}')
+  used_space=$(df -k | grep "^/dev/" | grep -v tmpfs | awk '{sum += $3} END {printf "%.0f", sum/1024/1024}')
+
+  echo "${used_space}Gi/${total_gb}Gi"
 else
   df -h / | awk 'NR==2 {print $3"/"$2}'
 fi
