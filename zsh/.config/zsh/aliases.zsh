@@ -66,3 +66,5 @@ alias tt='taskwarrior-tui'
 ### Utils
 #### [date] [e]nhanced
 alias datee='echo "Today 📅"; echo "- Week: $(date +%Y-W%V)"; echo "- Quarter: $(date +%Y)-Q$((($(date +%m | sed "s/^0*//") - 1) / 3 + 1))"; echo "- Month: $(date +%B)"; echo "- Left in year: $(($(date -j -f "%Y-%m-%d" "$(date +%Y)-12-31" +%j) - $(date +%j)))"'
+#### [habits] streak tracker
+alias habits='~/dotfiles/bin/.local/bin/habits-streak.py ~/code/my-vault/02-Areas/habits/habit-tracking.md'
