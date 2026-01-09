@@ -18,6 +18,10 @@ window-padding-x = 10
 
 # default: transparent, this one does not cause squared corners
 macos-titlebar-style = hidden 
+# macos-icon=retro
+# i like these blueprint, holographic, retro, xray
+# blueprint, chalkboard, microchip, glass, holographic, paper, retro, xray
 
 # Bold looks weird, I like this option better
 font-thicken = true
+# custom-shader=./custom-shaders/better-crt.glsl
