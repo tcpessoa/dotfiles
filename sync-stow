@@ -1,6 +1,5 @@
 #!/bin/bash
 packages=(
-  alacritty
   bin
   btop
   ghostty
@@ -15,3 +14,9 @@ packages=(
 for package in "${packages[@]}"; do
   stow -R -v -t ~ -d ~/dotfiles "$package"
 done
+
+# Special case for nvim (submodule) - direct symlink
+if [ ! -L ~/.config/nvim ]; then
+  ln -sfn ~/dotfiles/nvim ~/.config/nvim
+  echo "LINK: nvim -> ~/dotfiles/nvim"
+fi

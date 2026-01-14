@@ -63,4 +63,15 @@ cp ./git/.config/git/config-work-template ./git/.config/git/config-work
 
 # Neovim
 
-Managed in other [repo](https://github.com/tcpessoa/kickstart.nvim)
+Included as a submodule from [kickstart.nvim fork](https://github.com/tcpessoa/kickstart.nvim). After cloning:
+
+```sh
+git submodule update --init --recursive
+```
+
+To sync with upstream kickstart.nvim:
+```sh
+cd nvim
+git remote add upstream git@github.com:nvim-lua/kickstart.nvim.git
+git fetch upstream && git merge upstream/master
+```
