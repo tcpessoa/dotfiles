@@ -47,6 +47,12 @@ if [[ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]]; then
         "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
 fi
 
+# TPM (Tmux Plugin Manager)
+if [[ ! -d "$HOME/.config/tmux/plugins/tpm" ]]; then
+    echo "Installing TPM (Tmux Plugin Manager)..."
+    git clone https://github.com/tmux-plugins/tpm "$HOME/.config/tmux/plugins/tpm"
+fi
+
 configure_finder() {
     echo "Configuring Finder preferences..."
     

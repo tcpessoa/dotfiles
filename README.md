@@ -10,7 +10,7 @@ It accomodates:
 Run this for base installation (oh my zsh, homebrew, finder, etc):
 
 ```sh
-./base_macos
+./bootstrap_macos
 ```
 
 # Install packages
