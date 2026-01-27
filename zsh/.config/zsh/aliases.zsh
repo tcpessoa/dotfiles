@@ -9,6 +9,9 @@ alias szsh="source ~/.config/zsh/.zshrc"
 ## NVIM
 alias v='nvim'
 
+## opencode
+alias oc='opencode'
+
 ### USEFUL TERMINAL
 #### [l]ist all files with git status, directories first (dot files and directories first), alpabetically
 alias l='# List all files with git status, directories first (dot files and directories first)
