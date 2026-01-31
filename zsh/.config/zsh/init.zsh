@@ -54,7 +54,7 @@ bindkey -v # Use vi keybindings in ZSH
 export KEYTIMEOUT=1 # Reduce key timeout, vi mode
 
 # Plugin setup
-plugins=(git docker docker-compose kubectl nvm vi-mode)
+plugins=(git docker docker-compose kubectl vi-mode)
 plugins+=(zsh-autosuggestions zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
