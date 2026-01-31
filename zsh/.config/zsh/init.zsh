@@ -60,4 +60,7 @@ plugins+=(zsh-autosuggestions zsh-syntax-highlighting)
 # Disable oh-my-zsh auto-update check (run `omz update` manually)
 DISABLE_AUTO_UPDATE="true"
 
+# Skip compinit security check for faster startup
+ZSH_DISABLE_COMPFIX="true"
+
 source $ZSH/oh-my-zsh.sh
