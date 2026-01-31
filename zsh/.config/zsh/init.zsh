@@ -57,4 +57,7 @@ export KEYTIMEOUT=1 # Reduce key timeout, vi mode
 plugins=(git docker docker-compose kubectl vi-mode)
 plugins+=(zsh-autosuggestions zsh-syntax-highlighting)
 
+# Disable oh-my-zsh auto-update check (run `omz update` manually)
+DISABLE_AUTO_UPDATE="true"
+
 source $ZSH/oh-my-zsh.sh

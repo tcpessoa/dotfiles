@@ -1,3 +1,11 @@
+# Cache compinit - only regenerate once per day
+autoload -Uz compinit
+if [[ -n ~/.zcompdump(#qN.mh+24) ]]; then
+  compinit
+else
+  compinit -C  # skip security check, use cache
+fi
+
 # Completion and interactivity enhancements
 ## the sed part is to enable the history pretty date on CTRL-R
 ## see this [github issue](https://github.com/junegunn/fzf/issues/1049#issuecomment-2168007994)
