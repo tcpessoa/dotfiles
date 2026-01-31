@@ -1,49 +1,49 @@
 gui:
   scrollHeight: 7
   nerdFontsVersion: "3"
-  # Kanagawa Wave theme
-  # theme:
-  #   activeBorderColor:
-  #     - '#7E9CD8' # fujiBlue
-  #     - bold
-  #   inactiveBorderColor:
-  #     - '#727169' # fujiGray
-  #   optionsTextColor:
-  #     - '#7FB4CA' # springBlue
-  #   selectedLineBgColor:
-  #     - '#2A2A37' # sumiInk2
-  #   cherryPickedCommitBgColor:
-  #     - '#363646' # sumiInk3
-  #   cherryPickedCommitFgColor:
-  #     - '#7FB4CA' # springBlue
-  #   unstagedChangesColor:
-  #     - '#E82424' # autumnRed
-  #   defaultFgColor:
-  #     - '#DCD7BA' # fujiWhite
-  #   searchingActiveBorderColor:
-  #     - '#DCA561' # carpYellow
-
-  # Catppuccin Mocha theme
+  # Kanagawa Wave theme (matching Neovim terminal colors)
   theme:
     activeBorderColor:
-      - '#89b4fa' # blue
+      - '#FF9E3B' # surimiOrange - the orange you see in Neovim
       - bold
     inactiveBorderColor:
-      - '#a6adc8' # subtext0
+      - '#54546D' # sumiInk4
     optionsTextColor:
-      - '#89b4fa' # blue
+      - '#7FB4CA' # springBlue
     selectedLineBgColor:
-      - '#313244' # surface0
+      - '#2A2A37' # sumiInk2
     cherryPickedCommitBgColor:
-      - '#45475a' # surface1
+      - '#363646' # sumiInk3
     cherryPickedCommitFgColor:
-      - '#89b4fa' # blue
+      - '#7FB4CA' # springBlue
     unstagedChangesColor:
-      - '#f38ba8' # red
+      - '#E82424' # autumnRed
     defaultFgColor:
-      - '#cdd6f4' # text
+      - '#DCD7BA' # fujiWhite
     searchingActiveBorderColor:
-      - '#f9e2af' # yellow
+      - '#DCA561' # carpYellow
+
+  # Catppuccin Mocha theme
+  # theme:
+  #   activeBorderColor:
+  #     - '#89b4fa' # blue
+  #     - bold
+  #   inactiveBorderColor:
+  #     - '#a6adc8' # subtext0
+  #   optionsTextColor:
+  #     - '#89b4fa' # blue
+  #   selectedLineBgColor:
+  #     - '#313244' # surface0
+  #   cherryPickedCommitBgColor:
+  #     - '#45475a' # surface1
+  #   cherryPickedCommitFgColor:
+  #     - '#89b4fa' # blue
+  #   unstagedChangesColor:
+  #     - '#f38ba8' # red
+  #   defaultFgColor:
+  #     - '#cdd6f4' # text
+  #   searchingActiveBorderColor:
+  #     - '#f9e2af' # yellow
   # Branch color patterns for conventional commits and JIRA tickets
   branchColorPatterns:
     'main': '#cba6f7' # Catppuccin flamingo
