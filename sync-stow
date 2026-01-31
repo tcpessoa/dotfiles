@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 packages=(
   bin
   btop
@@ -16,7 +18,11 @@ for package in "${packages[@]}"; do
 done
 
 # Special case for nvim (submodule) - direct symlink
-if [ ! -L ~/.config/nvim ]; then
-  ln -sfn ~/dotfiles/nvim ~/.config/nvim
-  echo "LINK: nvim -> ~/dotfiles/nvim"
+if [ -d ~/.config/nvim ] && [ ! -L ~/.config/nvim ]; then
+  echo "ERROR: ~/.config/nvim exists as a directory, not a symlink."
+  echo "Remove it manually before running this script:"
+  echo "  rm -rf ~/.config/nvim"
+  exit 1
 fi
+ln -sfn ~/dotfiles/nvim ~/.config/nvim
+echo "LINK: nvim -> ~/dotfiles/nvim"

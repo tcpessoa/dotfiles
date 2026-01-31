@@ -50,10 +50,8 @@ tmux_select_project() {
         return 1
     fi
     
-    # Process each repo path
+    # Process each repo path (already normalized by get_repos_and_dirs_from_config)
     while IFS= read -r repo_path; do
-        repo_path=$(echo "$repo_path" | sed 's|//|/|g' | sed 's|/$||')
-        
         if [ -d "$repo_path" ]; then
             # Get depth for this directory from config (null means it's a direct repo)
             depth=$(echo "$CONFIG" | jq -r ".repos[] | select((.path | tostring | rtrimstr(\"/\")) == \"$repo_path\") | .depth // null")

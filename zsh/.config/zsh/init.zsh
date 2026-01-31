@@ -24,7 +24,7 @@ eval "$(/opt/homebrew/bin/brew shellenv)" # Homebrew env vars
 export PATH="$PATH:$HOME/.local/bin" # My custom bin scrips - `bin/.local/bin/`
 
 # Rust setup
-. "$HOME/.cargo/env"
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
 
 # Load env
 source "$HOME/.config/zsh/env.local" 2>/dev/null || true

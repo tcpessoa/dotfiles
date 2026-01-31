@@ -21,29 +21,6 @@ gsync() {
     fi
 }
 
-# proj fzf tools
-## [f]ind [p]roject
-fp() {
-    # find only directories at depth 1 for ~/Documents/repos_work/
-    local project=$(fd --type d --max-depth 1 . ~/Documents/repos_work --exec basename {} | fzf --height 40% --reverse --prompt 'Select a project: ' | awk -F'/' '{print $NF}')
-    if [[ -n $project ]]; then
-        cd ~/Documents/repos_work/$project
-    else
-        echo "No project selected."
-    fi
-}
-
-## [f]ind [pp]roject
-fpp() {
-    local project=$(fd --type d --max-depth 1 . ~/code --exec basename {} | fzf --height 40% --reverse --prompt 'Select a project: ' | awk -F'/' '{print $NF}')
-    if [[ -n $project ]]; then
-        cd ~/code/$project
-    else
-        echo "No project selected."
-    fi
-}
-
-
 ## --- k8s fzf tools
 ## [k]ubectl [logs]
 klogs() {
