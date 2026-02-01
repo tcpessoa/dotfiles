@@ -1,8 +1,22 @@
 # Completion and interactivity enhancements
-## the sed part is to enable the history pretty date on CTRL-R
+# Cache shell init scripts for faster startup (regenerate with: rm ~/.cache/zsh/*.zsh)
+_zsh_cache_dir="$XDG_CACHE_HOME/zsh"
+[[ -d "$_zsh_cache_dir" ]] || mkdir -p "$_zsh_cache_dir"
+
+## fzf - the sed part enables history pretty date on CTRL-R
 ## see this [github issue](https://github.com/junegunn/fzf/issues/1049#issuecomment-2168007994)
-eval "$(fzf --zsh | sed -e '/zmodload/s/perl/perl_off/' -e '/selected/s/fc -rl/fc -rlt \"%Y-%m-%d %H:%M\"/')"
-eval "$(starship init zsh)"
+if [[ ! -f "$_zsh_cache_dir/fzf.zsh" ]]; then
+  fzf --zsh | sed -e '/zmodload/s/perl/perl_off/' -e '/selected/s/fc -rl/fc -rlt \"%Y-%m-%d %H:%M\"/' > "$_zsh_cache_dir/fzf.zsh"
+fi
+source "$_zsh_cache_dir/fzf.zsh"
+
+## starship prompt
+if [[ ! -f "$_zsh_cache_dir/starship.zsh" ]]; then
+  starship init zsh > "$_zsh_cache_dir/starship.zsh"
+fi
+source "$_zsh_cache_dir/starship.zsh"
+
+unset _zsh_cache_dir
 
 # bun completions
 [ -s "$HOME/.bun/_bun" ] && source "$HOME/.bun/_bun"
