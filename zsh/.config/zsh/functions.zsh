@@ -31,8 +31,8 @@ klogs() {
 
     local pod=$(kubectl get pods --no-headers | fzf --height 40% --reverse --prompt 'Select a pod: ' | awk '{print $1}')
 
-    if [[ -n $pod ]]; then
-        kubectl logs -f $pod
+    if [[ -n "$pod" ]]; then
+        kubectl logs -f "$pod"
     else
         echo "No pod selected."
     fi
@@ -48,13 +48,13 @@ kexec() {
 
     local pod=$(kubectl get pods --no-headers | fzf --height 40% --reverse --prompt 'Select a pod: ' | awk '{print $1}')
 
-    if [[ -n $pod ]]; then
-        if [[ -n $1 ]]; then
+    if [[ -n "$pod" ]]; then
+        if [[ -n "$1" ]]; then
             # If a command argument is provided, execute it
-            kubectl exec -it $pod -- $1
+            kubectl exec -it "$pod" -- "$1"
         else
             # Default to opening an interactive shell
-            kubectl exec -it $pod -- /bin/bash
+            kubectl exec -it "$pod" -- /bin/bash
         fi
     else
         echo "No pod selected."
@@ -69,7 +69,7 @@ slogs() {
     fi
     local deployment=$(kubectl get deployments --no-headers | fzf --height 40% --reverse --prompt 'Select a deployment: ' | awk '{print $1}')
 
-    if [[ -z $deployment ]]; then
+    if [[ -z "$deployment" ]]; then
         echo "No deployment selected."
         return
     fi
@@ -95,8 +95,8 @@ dlogs() {
     check_docker_daemon || return
     local container=$(select_docker_container)
 
-    if [[ -n $container ]]; then
-        docker logs -f $container
+    if [[ -n "$container" ]]; then
+        docker logs -f "$container"
     else
         echo "No container selected."
     fi
@@ -109,13 +109,13 @@ dexec() {
     check_docker_daemon || return
     local container=$(select_docker_container)
 
-    if [[ -n $container ]]; then
-        if [[ -n $1 ]]; then
+    if [[ -n "$container" ]]; then
+        if [[ -n "$1" ]]; then
             # If a command argument is provided, execute it
-            docker exec -it $container $1
+            docker exec -it "$container" "$1"
         else
             # Default to opening an interactive shell
-            docker exec -it $container /bin/bash
+            docker exec -it "$container" /bin/bash
         fi
     else
         echo "No container selected."
@@ -128,8 +128,8 @@ dstop() {
     check_docker_daemon || return
     local container=$(select_docker_container)
 
-    if [[ -n $container ]]; then
-        docker stop $container
+    if [[ -n "$container" ]]; then
+        docker stop "$container"
     else
         echo "No container selected."
     fi
