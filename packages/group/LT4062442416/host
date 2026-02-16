@@ -8,3 +8,5 @@ stern
 task
 taskwarrior-tui
 yq
+azure-cli
+kubelogin

@@ -3,7 +3,7 @@ set -e
 
 formulae=$(brew list --formula | sort)
 casks=$(brew list --cask | sort)
-export HOST=$(hostname -s)
+export HOST=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
 
 BASE_DIR="$HOME/dotfiles/packages"
 GROUP_DIR="$BASE_DIR/group/$HOST"
