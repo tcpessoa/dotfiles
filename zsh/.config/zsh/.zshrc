@@ -11,3 +11,6 @@ source $HOME/.config/zsh/completions.zsh
 
 
 # zprof
+
+# opencode
+export PATH=$HOME/.opencode/bin:$PATH

@@ -57,21 +57,10 @@ cp ./git/.config/git/config-work-template ./git/.config/git/config-work
 
 - This configuration assumes that the work repos will be in `~/Documents/repos_work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
 
-# Useful LLM context
-
-`{ tree -a -I '.git|tmux' && echo && tree -d -L 2 .; } | pbcopy`
-
 # Neovim
 
 Included as a submodule from [kickstart.nvim fork](https://github.com/tcpessoa/kickstart.nvim). After cloning:
 
 ```sh
 git submodule update --init --recursive
-```
-
-To sync with upstream kickstart.nvim:
-```sh
-cd nvim
-git remote add upstream git@github.com:nvim-lua/kickstart.nvim.git
-git fetch upstream && git merge upstream/master
 ```
