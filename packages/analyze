@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-formulae=$(brew list --formula | sort)
+formulae=$(brew leaves | sort)
 casks=$(brew list --cask | sort)
 export HOST=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
 
@@ -11,6 +11,7 @@ echo "scanning $GROUP_DIR"
 
 check_package() {
     local pkg=$1
+    local short_pkg="${pkg##*/}"
     local found=false
     local host_file="$GROUP_DIR/host"
     
@@ -21,7 +22,7 @@ check_package() {
     
     for file in "$GROUP_DIR"/*; do
         if [[ -f "$file" || -L "$file" ]]; then
-            if grep -q "^$pkg$" "$(readlink -f "$file")" 2>/dev/null; then
+            if grep -qE "^($pkg|$short_pkg|[^/]+/[^/]+/$short_pkg)$" "$(readlink -f "$file")" 2>/dev/null; then
                 found=true
                 break
             fi
