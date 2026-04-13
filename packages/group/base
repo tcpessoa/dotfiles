@@ -22,4 +22,5 @@ starship
 stow
 tmux
 tree
+tree-sitter-cli
 uv
