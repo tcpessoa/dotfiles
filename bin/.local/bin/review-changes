@@ -95,6 +95,7 @@ review_repo() {
     if [[ -n "$commits" || ($show_unstaged && -n "$unstaged") ]]; then
         found_changes=true
         echo "📁 $repo_name:"
+        echo "    ($repo_path)"
 
         if [[ -n "$commits" ]]; then
             echo "  Commits:"
