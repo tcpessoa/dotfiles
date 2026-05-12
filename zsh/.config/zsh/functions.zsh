@@ -77,6 +77,44 @@ slogs() {
     stern "$deployment"
 }
 
+## [k]ubectl [sec]ret
+## Pick namespace -> secret -> key (or <all>); decoded value is printed.
+## Single-key picks are also copied to the clipboard via pbcopy.
+ksec() {
+    if ! kubectl version --request-timeout='3s' &>/dev/null; then
+        echo "Failed to connect to the Kubernetes cluster."
+        return
+    fi
+
+    local ns secret json keys key
+    ns=$(kubectl get ns -o name | sed 's|namespace/||' \
+          | fzf --height 40% --reverse --prompt='namespace> ') || return
+    # Hide Helm release bookkeeping secrets (sh.helm.release.v1.*) — noise, not user secrets.
+    secret=$(kubectl get secret -n "$ns" --field-selector type!=helm.sh/release.v1 -o name \
+          | sed 's|secret/||' \
+          | fzf --height 40% --reverse --prompt="secret ($ns)> ") || return
+
+    json=$(kubectl get secret "$secret" -n "$ns" -o json) || return
+
+    keys=$(print -r -- "$json" | jq -r '.data // {} | keys[]')
+    if [[ -z "$keys" ]]; then
+        echo "(no data keys in $ns/$secret)"
+        return
+    fi
+
+    key=$(printf '<all>\n%s\n' "$keys" \
+          | fzf --height 40% --reverse --prompt="key ($ns/$secret)> ") || return
+
+    if [[ "$key" == "<all>" ]]; then
+        print -r -- "$json" | jq -r '.data | to_entries[] | "\(.key)=\(.value | @base64d)"'
+    else
+        local value
+        value=$(print -r -- "$json" | jq -r --arg k "$key" '.data[$k] | @base64d')
+        printf '%s\n' "$value"
+        printf '%s' "$value" | pbcopy && echo "(copied to clipboard)"
+    fi
+}
+
 ## docker fzf tools
 select_docker_container() {
     docker ps --format "table {{.ID}}\t{{.Names}}" | tail -n +2 | fzf --height 40% --reverse --prompt 'Select a container: ' | awk '{print $1}'
