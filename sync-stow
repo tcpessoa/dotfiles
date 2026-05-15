@@ -17,6 +17,20 @@ for package in "${packages[@]}"; do
   stow -R -v -t ~ -d ~/dotfiles "$package"
 done
 
+# Claude packages: --no-folding so multiple packages can co-own ~/.claude/commands/
+# (claude-work / claude-personal will be added in a follow-up; both compose into the same dir.)
+claude_packages=(claude)
+if [ "${WORK_ENV:-false}" = "true" ]; then
+  claude_packages+=(claude-work)
+else
+  claude_packages+=(claude-personal)
+fi
+
+for package in "${claude_packages[@]}"; do
+  [ -d "$HOME/dotfiles/$package" ] || continue
+  stow -R --no-folding -v -t ~ -d ~/dotfiles "$package"
+done
+
 # Special case for nvim (submodule) - direct symlink
 if [ -d ~/.config/nvim ] && [ ! -L ~/.config/nvim ]; then
   echo "ERROR: ~/.config/nvim exists as a directory, not a symlink."

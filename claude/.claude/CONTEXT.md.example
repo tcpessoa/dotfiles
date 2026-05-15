@@ -1,0 +1,96 @@
+# CONTEXT.md — workspace context for /morning, /checkpoint, /end-of-day
+
+This file tells the generic `/morning`, `/checkpoint`, `/end-of-day` commands what they need to know about the current workspace: who you are, where things live, what issue tracker (if any) you use, and any local conventions.
+
+The commands look for `CONTEXT.md` in this order:
+
+1. `./CONTEXT.md` in the current working directory (per-workspace override).
+2. `~/.claude/CONTEXT.md` (global fallback).
+
+Whichever they find first is the one they use. Free prose — no schema, no front-matter. The LLM reads it.
+
+Below is a template covering the dimensions the commands care about. Delete sections you don't need. Add anything else worth knowing about the workspace.
+
+---
+
+## Identity
+
+- Name / handle: <your name>
+- Git author email: <email used in commits — needed for matching commits to you>
+- Tracker username (if any): <e.g., jira username, github handle>
+
+## Paths
+
+- **Daily notes**: `<absolute path to the directory containing YYYY-MM-DD.md files>`
+  - File shape: each daily note has user-written sections `## 🗒️ Brain dump` and `## 🔖 Hemingway bridge`, plus a bounded `<!-- AI:START --> ... <!-- AI:END -->` block the commands manage. If your shape differs, describe it here.
+- **THREADS.md** (optional): `<absolute path or "none">` — the living index of half-finished ideas from past brain dumps. See `~/.claude/commands/_threads.md` for the format. Omit if you don't use it.
+- **Code root** (optional): `<absolute path under which your repos live>` — used by `review-changes` and for "cd into the repo" suggestions. Omit if your repos are scattered.
+
+## Issue tracker
+
+Pick one. The commands adapt their flow based on this section.
+
+### Option A — Jira
+
+```
+Tracker: Jira
+CLI: jira (https://github.com/ankitpokhrel/jira-cli)
+Auth: configured at ~/.config/.jira/.config.yml as user <username>
+Reference: see ~/.claude/commands/_jira-cli.md for CLI quirks and reusable JQL.
+Projects: <PROJ1>, <PROJ2>, <PROJ3>  # which project keys belong to you
+Default project for new tickets: <PROJ1>
+Required fields on create:
+  - <PROJ1>: story points required (use --custom story-points=N)
+  - <PROJ2>: no extra requirements
+```
+
+### Option B — GitHub Issues
+
+```
+Tracker: GitHub Issues
+CLI: gh (authed via `gh auth login`)
+Repos in scope: <owner/repo>, <owner/repo>, ...  # or "all repos under <code root>"
+Default repo for new issues: <owner/repo>
+Key format: #N within a repo; cross-repo references look like owner/repo#N.
+```
+
+### Option C — None
+
+```
+Tracker: none
+```
+
+When `Tracker: none`, the commands skip ticket queries, idempotency checks, and new-ticket proposals. They still run the commit scan, the daily-note AI block, the Hemingway bridge, and THREADS.md updates. Useful for personal projects where the daily-notes loop is what you want and ticketing would be noise.
+
+## Project routing / domain (optional but useful)
+
+Free prose. Map each repo (or project key) to what kind of work happens there, so the commands can suggest "this ticket sounds like a `<repo>` thing." Include a glossary of acronyms / sensors / domain terms that show up in tickets but aren't obvious from the code.
+
+Example structure:
+
+```
+### <PROJECT-KEY-or-product-name>
+
+Repos:
+- <repo> — what lives here, which tickets land here
+- <repo> — ...
+
+Routing hints:
+- Tickets about <X> → <repo>
+- Tickets about <Y> → <repo>
+```
+
+This section is what `/morning` reads to answer "which repo should I cd into for this ticket?"
+
+## Conventions (optional)
+
+Anything about how you work that the commands should respect. Examples:
+
+- Commit / branch / PR style (conventional commits, branch naming with ticket keys, etc.)
+- Comment voice — who reads Jira/issue comments? PMs? Engineers only? This shapes how `/checkpoint` and `/end-of-day` write `Update:` comments. (For Jira-specific guidance, see `_jira-cli.md` § Comment voice.)
+- Ticket creation conventions (assign to self, add to current sprint, required custom fields, etc.)
+- Weekday assumption — if you work Mon–Fri, `/morning` on Monday looks back to Friday.
+
+## Notes for the commands (optional)
+
+A free-form section where you can leave standing instructions for `/morning`, `/checkpoint`, `/end-of-day` — things like "always surface High priority first," "infer repo from ticket text when CONTEXT is silent," "don't propose new threads for fragments shorter than 3 words," etc.
