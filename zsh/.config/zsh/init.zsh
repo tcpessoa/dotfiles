@@ -19,8 +19,10 @@ export GOPATH="$XDG_DATA_HOME/go"
 
 # PATH
 export PATH="$HOME/.rd/bin:$PATH" # Rancher Desktop
-export PATH="/opt/homebrew/bin:$PATH" # Homebrew M chip install
-eval "$(/opt/homebrew/bin/brew shellenv)" # Homebrew env vars
+if [[ -d /opt/homebrew/bin ]]; then
+  export PATH="/opt/homebrew/bin:$PATH" # Homebrew M chip install
+  eval "$(/opt/homebrew/bin/brew shellenv)" # Homebrew env vars
+fi
 export PATH="$PATH:$HOME/.local/bin" # My custom bin scrips - `bin/.local/bin/`
 
 # Rust setup
