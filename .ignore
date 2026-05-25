@@ -17,3 +17,6 @@
 
 # bin local scripts
 !bin/.local/
+
+# claude
+!claude/.claude/
