@@ -7,10 +7,12 @@ It accomodates:
 
 ## Layout
 
-- `install` — single entrypoint: runs `bootstrap` → `packages/install` → `sync-stow`, in that order.
-- `bootstrap` — OS-agnostic setup (shell, zsh plugins, TPM, submodules); dispatches to `os/<os>`.
-- `os/<os>` — OS-specific prerequisites. `os/macos` does Xcode, Homebrew, and Finder/Dock defaults. Add `os/linux` to extend.
-- `lib.sh` — shared helpers (`dotfiles_host`, `dotfiles_os`) sourced by the scripts so host/OS detection has one definition.
+- `install` — single entrypoint: runs `setup/bootstrap` → `packages/install` → `setup/sync-stow`, in that order.
+- `setup/` — one-time provisioning machinery:
+  - `bootstrap` — OS-agnostic setup (shell, zsh plugins, TPM, submodules); dispatches to `os/<os>`.
+  - `os/<os>` — OS-specific prerequisites. `os/macos` does Xcode, Homebrew, and Finder/Dock defaults. Add `os/linux` to extend.
+  - `lib.sh` — shared helpers (`dotfiles_host`, `dotfiles_os`) sourced by the scripts so host/OS detection has one definition.
+  - `sync-stow` — stows the config packages into `$HOME`.
 - `packages/` — package lists per host under `group/<host>/` (a shared `base` symlinked in, plus a `host` file), installed by `packages/install`.
 
 # Provision a machine
@@ -24,13 +26,13 @@ One command does bootstrap, packages, and stow:
 The steps are also runnable on their own:
 
 ```sh
-./bootstrap          # prerequisites: Xcode/Homebrew, zsh plugins, TPM, submodules
+./setup/bootstrap    # prerequisites: Xcode/Homebrew, zsh plugins, TPM, submodules
 ./packages/install   # CLI tools (incl. stow) for this host
-./sync-stow          # symlink configs into $HOME
+./setup/sync-stow    # symlink configs into $HOME
 ```
 
 > macOS GUI defaults (Finder/Dock) are applied once and then skipped on re-runs.
-> Force a re-apply with `DOTFILES_MACOS_DEFAULTS=force ./os/macos`.
+> Force a re-apply with `DOTFILES_MACOS_DEFAULTS=force ./setup/os/macos`.
 
 If there are ad hoc installed packages on the host that are not synced to a file, run:
 

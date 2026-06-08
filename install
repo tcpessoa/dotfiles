@@ -7,12 +7,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "==> [1/3] bootstrap"
-"$SCRIPT_DIR/bootstrap"
+"$SCRIPT_DIR/setup/bootstrap"
 
 echo "==> [2/3] packages"
 "$SCRIPT_DIR/packages/install"
 
 echo "==> [3/3] stow"
-"$SCRIPT_DIR/sync-stow"
+"$SCRIPT_DIR/setup/sync-stow"
 
 echo "✅ Done. Restart your terminal for all changes to take effect."

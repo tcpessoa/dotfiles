@@ -43,6 +43,6 @@ clone_if_missing "$HOME/.config/tmux/plugins/tpm" https://github.com/tmux-plugin
 
 # 5. Submodules (nvim).
 echo "==> Updating git submodules"
-git -C "$SCRIPT_DIR" submodule update --init --recursive
+git -C "$SCRIPT_DIR/.." submodule update --init --recursive
 
 echo "==> Bootstrap complete"

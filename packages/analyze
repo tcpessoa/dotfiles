@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source "$SCRIPT_DIR/../lib.sh"
+source "$SCRIPT_DIR/../setup/lib.sh"
 
 formulae=$(brew leaves | sort)
 casks=$(brew list --cask | sort)
