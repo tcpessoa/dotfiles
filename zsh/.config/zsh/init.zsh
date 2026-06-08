@@ -27,19 +27,11 @@ export NODE_REPL_HISTORY="$XDG_STATE_HOME/node/repl_history"
 export LESSHISTFILE="$XDG_STATE_HOME/less/history"
 export GOPATH="$XDG_DATA_HOME/go"
 
-# PATH
-export PATH="$HOME/.rd/bin:$PATH" # Rancher Desktop
-if [[ -d /opt/homebrew/bin ]]; then
-  export PATH="/opt/homebrew/bin:$PATH" # Homebrew M chip install
-  # Cache `brew shellenv` output — spawning brew costs ~35ms/startup; the output is static.
-  # (regenerate after a brew prefix change: rm ~/.cache/zsh/brew-shellenv.zsh)
-  _brewenv="$XDG_CACHE_HOME/zsh/brew-shellenv.zsh"
-  if [[ ! -s "$_brewenv" ]]; then
-    mkdir -p "${_brewenv:h}" && /opt/homebrew/bin/brew shellenv >| "$_brewenv"
-  fi
-  zsrc "$_brewenv"
-  unset _brewenv
-fi
+# PATH — OS-specific bits (homebrew, rancher, …) live in os/<os>.zsh
+case "$OSTYPE" in
+  darwin*) source "$ZDOTDIR/os/darwin.zsh" ;;
+  linux*)  [[ -r "$ZDOTDIR/os/linux.zsh" ]] && source "$ZDOTDIR/os/linux.zsh" ;;
+esac
 export PATH="$PATH:$HOME/.local/bin" # My custom bin scrips - `bin/.local/bin/`
 
 # Rust setup
