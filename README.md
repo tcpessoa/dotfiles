@@ -40,6 +40,21 @@ If there are ad hoc installed packages on the host that are not synced to a file
 ./packages/analyze
 ```
 
+# After I change something — what to run
+
+`./install` is the *provision-a-machine* tool, not the *I-tweaked-a-dotfile* tool. Configs are
+stowed as **symlinks**, so editing an already-stowed file is live the moment you save — no command
+needed. Running `./install` is always safe (every step is idempotent), but usually a targeted
+script is faster and clearer.
+
+| What you changed | What to run |
+|---|---|
+| Edited an **already-stowed** config (`zsh/…`, `git/…`, `starship/…`) | **Nothing** — it's a symlink, already live. New shell or `szsh` to reload. |
+| Added a **new package dir** or a file outside an existing stowed tree | `./setup/sync-stow` (creates the new symlink) |
+| Added a tool to a `packages/group/<host>` file | `./packages/install` |
+| Changed a `defaults write` in `setup/os/macos` | `DOTFILES_MACOS_DEFAULTS=force ./setup/os/macos` — plain `./install` **skips** it (marker) |
+| Fresh machine / "just make everything right" | `./install` |
+
 > [!note] Host commands on mac os
 > ```sh
 > scutil --get ComputerName
