@@ -74,3 +74,7 @@ alias tt='taskwarrior-tui'
 alias datee='echo "Today 📅"; echo "- Week: $(date +%Y-W%V)"; echo "- Quarter: $(date +%Y)-Q$((($(date +%m | sed "s/^0*//") - 1) / 3 + 1))"; echo "- Month: $(date +%B)"; echo "- Left in year: $(($(date -j -f "%Y-%m-%d" "$(date +%Y)-12-31" +%j) - $(date +%j)))"'
 #### [habits] streak tracker
 alias habits='~/dotfiles/bin/.local/bin/habits-streak.py ~/code/my-vault/02-Areas/habits/habit-tracking.md'
+
+### Tool-specific alias modules (extracted from the old oh-my-zsh plugins)
+source "$ZDOTDIR/kubectl-aliases.zsh" # kgp/k/kl/... + kj/kjx/ky helpers
+source "$ZDOTDIR/docker-aliases.zsh"  # dcup/dclf/dcupd/...

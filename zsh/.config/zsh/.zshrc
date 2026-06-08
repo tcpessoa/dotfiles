@@ -8,8 +8,6 @@ source $HOME/.config/zsh/settings.zsh
 source $HOME/.config/zsh/aliases.zsh
 source $HOME/.config/zsh/functions.zsh
 source $HOME/.config/zsh/completions.zsh
-source $HOME/.config/zsh/kubectl-aliases.zsh # kgp/k/kl/... (from old OMZ kubectl plugin)
-source $HOME/.config/zsh/docker-aliases.zsh  # dcup/dclf/dcupd/... (from old OMZ docker plugins)
 
 # opencode
 export PATH=$HOME/.opencode/bin:$PATH
