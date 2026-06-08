@@ -1,4 +1,13 @@
 # FUNCTIONS
+## Portable clipboard copy (stdin -> clipboard): macOS pbcopy, Wayland, or X11.
+clipcopy() {
+  if (( $+commands[pbcopy] )); then pbcopy
+  elif (( $+commands[wl-copy] )); then wl-copy
+  elif (( $+commands[xclip] )); then xclip -selection clipboard
+  else echo "clipcopy: no clipboard tool found" >&2; cat >/dev/null; return 1
+  fi
+}
+
 ## Function to measure startup time of shell
 timezsh() {
   shell=${1-$SHELL}
@@ -79,7 +88,7 @@ slogs() {
 
 ## [k]ubectl [sec]ret
 ## Pick namespace -> secret -> key (or <all>); decoded value is printed.
-## Single-key picks are also copied to the clipboard via pbcopy.
+## Single-key picks are also copied to the clipboard via clipcopy.
 ksec() {
     if ! kubectl version --request-timeout='3s' &>/dev/null; then
         echo "Failed to connect to the Kubernetes cluster."
@@ -111,7 +120,7 @@ ksec() {
         local value
         value=$(print -r -- "$json" | jq -r --arg k "$key" '.data[$k] | @base64d')
         printf '%s\n' "$value"
-        printf '%s' "$value" | pbcopy && echo "(copied to clipboard)"
+        printf '%s' "$value" | clipcopy && echo "(copied to clipboard)"
     fi
 }
 
