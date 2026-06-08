@@ -5,21 +5,34 @@ It accomodates:
 - personal and work configurations for gitconfig and zsh.
 - packages installation by host
 
-# MAC OS base installation
+## Layout
 
-Run this for base installation (oh my zsh, homebrew, finder, etc):
+- `install` — single entrypoint: runs `bootstrap` → `packages/install` → `sync-stow`, in that order.
+- `bootstrap` — OS-agnostic setup (shell, zsh plugins, TPM, submodules); dispatches to `os/<os>`.
+- `os/<os>` — OS-specific prerequisites. `os/macos` does Xcode, Homebrew, and Finder/Dock defaults. Add `os/linux` to extend.
+- `lib.sh` — shared helpers (`dotfiles_host`, `dotfiles_os`) sourced by the scripts so host/OS detection has one definition.
+- `packages/` — package lists per host under `group/<host>/` (a shared `base` symlinked in, plus a `host` file), installed by `packages/install`.
+
+# Provision a machine
+
+One command does bootstrap, packages, and stow:
 
 ```sh
-./bootstrap_macos
+./install
 ```
 
-# Install packages
+The steps are also runnable on their own:
 
 ```sh
-./packages/install
+./bootstrap          # prerequisites: Xcode/Homebrew, zsh plugins, TPM, submodules
+./packages/install   # CLI tools (incl. stow) for this host
+./sync-stow          # symlink configs into $HOME
 ```
 
-If there are ad hoc installed packages in the host that are not synced to a file, run:
+> macOS GUI defaults (Finder/Dock) are applied once and then skipped on re-runs.
+> Force a re-apply with `DOTFILES_MACOS_DEFAULTS=force ./os/macos`.
+
+If there are ad hoc installed packages on the host that are not synced to a file, run:
 
 ```sh
 ./packages/analyze
@@ -32,13 +45,6 @@ If there are ad hoc installed packages in the host that are not synced to a file
 > scutil --get HostName
 > sudo scutil --set HostName axiom.local
 > ```
-
-# Stow all home configs
-
-In order to create the symlinks run:
-```sh
-./sync-stow
-```
 
 # ZSH and env vars
 Set all needed env vars in the [env.local](zsh/.config/zsh/env.local) file:
