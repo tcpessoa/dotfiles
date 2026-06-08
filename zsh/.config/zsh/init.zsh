@@ -4,6 +4,16 @@ export XDG_CACHE_HOME="$HOME/.cache"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_STATE_HOME="$HOME/.local/state"
 
+# Helper: source a file via a compiled .zwc bytecode copy (recompiled only when newer).
+zsrc() {
+  local f="$1"
+  [[ -r "$f" ]] || return 0
+  if [[ ! -s "${f}.zwc" || "$f" -nt "${f}.zwc" ]]; then
+    zcompile -R -- "${f}.zwc" "$f" 2>/dev/null
+  fi
+  source "$f"
+}
+
 # zsh stuff
 export ZSH_PLUGIN_DIR="$XDG_DATA_HOME/zsh/plugins" # standalone plugins (no framework)
 export HISTFILE="$ZDOTDIR/.zsh_history"
@@ -21,7 +31,14 @@ export GOPATH="$XDG_DATA_HOME/go"
 export PATH="$HOME/.rd/bin:$PATH" # Rancher Desktop
 if [[ -d /opt/homebrew/bin ]]; then
   export PATH="/opt/homebrew/bin:$PATH" # Homebrew M chip install
-  eval "$(/opt/homebrew/bin/brew shellenv)" # Homebrew env vars
+  # Cache `brew shellenv` output — spawning brew costs ~35ms/startup; the output is static.
+  # (regenerate after a brew prefix change: rm ~/.cache/zsh/brew-shellenv.zsh)
+  _brewenv="$XDG_CACHE_HOME/zsh/brew-shellenv.zsh"
+  if [[ ! -s "$_brewenv" ]]; then
+    mkdir -p "${_brewenv:h}" && /opt/homebrew/bin/brew shellenv >| "$_brewenv"
+  fi
+  zsrc "$_brewenv"
+  unset _brewenv
 fi
 export PATH="$PATH:$HOME/.local/bin" # My custom bin scrips - `bin/.local/bin/`
 
@@ -54,17 +71,6 @@ done
 
 bindkey -v # Use vi keybindings in ZSH (starship draws the ❯/❮ mode indicator)
 export KEYTIMEOUT=1 # Reduce key timeout, vi mode
-
-# --- Helper: source a file, transparently caching a compiled .zwc bytecode copy ---
-# Recompiles only when the source is newer; zsh auto-loads the .zwc when present.
-zsrc() {
-  local f="$1"
-  [[ -r "$f" ]] || return 0
-  if [[ ! -s "${f}.zwc" || "$f" -nt "${f}.zwc" ]]; then
-    zcompile -R -- "${f}.zwc" "$f" 2>/dev/null
-  fi
-  source "$f"
-}
 
 # --- Completion system (replaces oh-my-zsh's compinit) ---
 autoload -Uz compinit
