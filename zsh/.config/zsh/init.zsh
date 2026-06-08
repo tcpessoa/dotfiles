@@ -5,7 +5,7 @@ export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_STATE_HOME="$HOME/.local/state"
 
 # zsh stuff
-export ZSH="$HOME/.oh-my-zsh"
+export ZSH_PLUGIN_DIR="$XDG_DATA_HOME/zsh/plugins" # standalone plugins (no framework)
 export HISTFILE="$ZDOTDIR/.zsh_history"
 export HISTSIZE=10000
 export SAVEHIST=10000
@@ -52,17 +52,46 @@ for cmd in nvm node npm npx; do
   eval "${cmd}() { lazy_load_nvm; ${cmd} \$@; }"
 done
 
-bindkey -v # Use vi keybindings in ZSH
+bindkey -v # Use vi keybindings in ZSH (starship draws the ❯/❮ mode indicator)
 export KEYTIMEOUT=1 # Reduce key timeout, vi mode
 
-# Plugin setup
-plugins=(git docker docker-compose kubectl vi-mode)
-plugins+=(zsh-autosuggestions zsh-syntax-highlighting)
+# --- Helper: source a file, transparently caching a compiled .zwc bytecode copy ---
+# Recompiles only when the source is newer; zsh auto-loads the .zwc when present.
+zsrc() {
+  local f="$1"
+  [[ -r "$f" ]] || return 0
+  if [[ ! -s "${f}.zwc" || "$f" -nt "${f}.zwc" ]]; then
+    zcompile -R -- "${f}.zwc" "$f" 2>/dev/null
+  fi
+  source "$f"
+}
 
-# Disable oh-my-zsh auto-update check (run `omz update` manually)
-DISABLE_AUTO_UPDATE="true"
+# --- Completion system (replaces oh-my-zsh's compinit) ---
+autoload -Uz compinit
+_zcompdump="$ZDOTDIR/.zcompdump"
+# Full, fpath-scanning compinit only if the dump is missing or >20h old; else trust it (-C, fast).
+if [[ -z "$_zcompdump"(#qNmh-20) ]]; then
+  compinit -d "$_zcompdump"
+else
+  compinit -C -d "$_zcompdump"
+fi
+# Compile the dump to bytecode for faster reloads
+if [[ -s "$_zcompdump" && ( ! -s "${_zcompdump}.zwc" || "$_zcompdump" -nt "${_zcompdump}.zwc" ) ]]; then
+  zcompile -R -- "${_zcompdump}.zwc" "$_zcompdump" 2>/dev/null
+fi
+unset _zcompdump
+autoload -Uz bashcompinit && bashcompinit # for bash-style completion scripts
 
-# Skip compinit security check for faster startup
-ZSH_DISABLE_COMPFIX="true"
+# --- Completion styling (parity with oh-my-zsh defaults) ---
+zstyle ':completion:*' matcher-list 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' 'r:|=*' 'l:|=* r:|=*' # case-insensitive
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu select
+zstyle ':completion:*' special-dirs true
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/zcompcache"
 
-source $ZSH/oh-my-zsh.sh
+# --- Sensible shell options (parity with oh-my-zsh defaults) ---
+setopt auto_cd interactive_comments prompt_subst long_list_jobs multios
+setopt complete_in_word always_to_end
+setopt extended_history hist_ignore_dups hist_ignore_space hist_expire_dups_first \
+       hist_verify hist_find_no_dups hist_reduce_blanks share_history

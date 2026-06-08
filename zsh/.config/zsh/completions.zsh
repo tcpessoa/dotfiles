@@ -8,13 +8,24 @@ _zsh_cache_dir="$XDG_CACHE_HOME/zsh"
 if [[ ! -f "$_zsh_cache_dir/fzf.zsh" ]]; then
   fzf --zsh | sed -e '/zmodload/s/perl/perl_off/' -e '/selected/s/fc -rl/fc -rlt \"%Y-%m-%d %H:%M\"/' > "$_zsh_cache_dir/fzf.zsh"
 fi
-source "$_zsh_cache_dir/fzf.zsh"
+zsrc "$_zsh_cache_dir/fzf.zsh"
 
 ## starship prompt
 if [[ ! -f "$_zsh_cache_dir/starship.zsh" ]]; then
   starship init zsh > "$_zsh_cache_dir/starship.zsh"
 fi
-source "$_zsh_cache_dir/starship.zsh"
+zsrc "$_zsh_cache_dir/starship.zsh"
+
+# CLI completions, generated once and cached (regenerate: rm ~/.cache/zsh/comp-*.zsh*)
+# Generating these spawns the tool (slow); sourcing the cached file is cheap.
+for _tool in kubectl docker; do
+  _cf="$_zsh_cache_dir/comp-${_tool}.zsh"
+  if [[ ! -s "$_cf" ]] && command -v "$_tool" >/dev/null 2>&1; then
+    "$_tool" completion zsh >| "$_cf" 2>/dev/null
+  fi
+  zsrc "$_cf"
+done
+unset _tool _cf
 
 unset _zsh_cache_dir
 
