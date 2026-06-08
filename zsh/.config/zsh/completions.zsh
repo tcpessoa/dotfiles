@@ -57,6 +57,15 @@ show_file_or_dir_preview="if [ -d {} ]; then eza --tree --color=always {} | head
 export FZF_CTRL_T_OPTS="--preview '$show_file_or_dir_preview'"
 export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always {} | head -200'"
 
+# CTRL-R history: syntax-highlight the *selected* command in a small preview.
+# Cost is one bat call per focused line (not the whole list), so the list stays instant.
+# Row layout is "INDEX DATE TIME cmd…", so {4..} is just the command.
+export FZF_CTRL_R_OPTS="
+  --preview 'echo {4..} | bat --color=always -pl zsh --style plain'
+  --preview-window 'down:3:wrap'
+  --preview-label ' C-o expand '
+  --bind 'ctrl-o:change-preview-window(down:75%:wrap|down:3:wrap)'"
+
 # Advanced customization of fzf options via _fzf_comprun function
 # - The first argument to the function is the name of the command.
 # - You should make sure to pass the rest of the arguments to fzf.
