@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# OS-agnostic bootstrap: shell, standalone zsh plugins, tmux plugin manager, submodules.
+# OS-specific prerequisites (package manager, compilers, GUI defaults) live in os/<os>.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+
+OS="$(dotfiles_os)"
+echo "==> Bootstrapping for $OS"
+
+# 1. OS-specific prerequisites (Xcode/brew on macOS; apt/pacman later on Linux).
+OS_SCRIPT="$SCRIPT_DIR/os/$OS"
+if [[ -x "$OS_SCRIPT" ]]; then
+  "$OS_SCRIPT"
+else
+  echo "No OS bootstrap script for '$OS' ($OS_SCRIPT) — skipping OS-specific setup."
+fi
+
+# 2. Default shell -> zsh (config is framework-free, lives in ~/.config/zsh).
+#    Guard on `command -v zsh` so a fresh Linux box (zsh not yet installed) doesn't error;
+#    re-run after packages install zsh.
+if [[ "$SHELL" != *zsh* ]] && command -v zsh >/dev/null 2>&1; then
+  echo "==> Changing default shell to zsh"
+  chsh -s "$(command -v zsh)"
+fi
+
+clone_if_missing() {
+  local dest="$1" url="$2"
+  [[ -d "$dest" ]] && return 0
+  echo "==> Cloning ${dest##*/}"
+  git clone --depth=1 "$url" "$dest"
+}
+
+# 3. Standalone zsh plugins (sourced directly by ~/.config/zsh/.zshrc).
+ZSH_PLUGIN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
+mkdir -p "$ZSH_PLUGIN_DIR"
+clone_if_missing "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting" https://github.com/zsh-users/zsh-syntax-highlighting.git
+clone_if_missing "$ZSH_PLUGIN_DIR/zsh-autosuggestions"     https://github.com/zsh-users/zsh-autosuggestions.git
+
+# 4. TPM (tmux plugin manager).
+clone_if_missing "$HOME/.config/tmux/plugins/tpm" https://github.com/tmux-plugins/tpm
+
+# 5. Submodules (nvim).
+echo "==> Updating git submodules"
+git -C "$SCRIPT_DIR" submodule update --init --recursive
+
+echo "==> Bootstrap complete"
