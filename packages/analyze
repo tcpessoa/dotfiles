@@ -1,9 +1,12 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$SCRIPT_DIR/../lib.sh"
+
 formulae=$(brew leaves | sort)
 casks=$(brew list --cask | sort)
-export HOST=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
+export HOST=$(dotfiles_host)
 
 BASE_DIR="$HOME/dotfiles/packages"
 GROUP_DIR="$BASE_DIR/group/$HOST"
