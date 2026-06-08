@@ -46,7 +46,7 @@ In order:
 
 ## Idempotency — timestamp-based
 
-Comment bodies don't include SHAs (see `_jira-cli.md` § Comment voice — the rule applies to any tracker: PM-readable, no plumbing). So idempotency is by timestamp, not by hash:
+Comment bodies don't include SHAs (see `jira-cli.md` § Comment voice — the rule applies to any tracker: PM-readable, no plumbing). So idempotency is by timestamp, not by hash:
 
 1. Fetch the ticket's recent comments:
    - Jira: `jira issue view <KEY> --plain --comments 20`
@@ -69,7 +69,7 @@ For each proposed new ticket, draft:
   - gh: the repo itself is where the issue lives. `CONTEXT.md` may declare a default repo for cross-cutting work.
 - **Type / labels**: `Task` by default (Jira) or no special label (gh); `Bug` (Jira) / `bug` label (gh) if commits look like fixes (subject starts with `fix:` or contains "fix", "bug", "revert").
 - **Summary**: short one-line title derived from the commit subjects.
-- **Description**: PM-facing — what the work accomplished and why, in business terms. **No commit SHAs or branch names in the description body** (per `_jira-cli.md` § Comment voice). After the ticket is created, you can back-fill a separate internal comment with repo/branch/SHA/MR for ticket↔code traceability (per `CONTEXT.md` § Conventions, if the user has set that convention).
+- **Description**: PM-facing — what the work accomplished and why, in business terms. **No commit SHAs or branch names in the description body** (per `jira-cli.md` § Comment voice). After the ticket is created, you can back-fill a separate internal comment with repo/branch/SHA/MR for ticket↔code traceability (per `CONTEXT.md` § Conventions, if the user has set that convention).
 
 ## What to surface to the user
 

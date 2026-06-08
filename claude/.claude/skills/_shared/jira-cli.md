@@ -67,7 +67,7 @@ When the user says "go" / "apply" / "yes", run actions in this order:
    jira issue create -p<PROJECT> -t<TYPE> -s"<summary>" -b"<description>"
    ```
    `jira issue create` may prompt for required fields it can't infer. If the project has no extra required fields, pass `--no-input`. Otherwise let the prompt happen and tell the user "this one needs a few extra fields, answer them".
-3. **Daily-note AI block last** (per `_daily-notes.md`) — only after Jira ops succeeded, so the block accurately reflects what was actually applied.
+3. **Daily-note AI block last** (per `daily-notes.md`) — only after Jira ops succeeded, so the block accurately reflects what was actually applied.
 
 Print confirmations after each: `✅ Commented on <KEY>` / `✅ Created <KEY>: <summary>`.
 
@@ -75,7 +75,7 @@ If a step fails, **stop**, report the error, and don't proceed with the rest. Th
 
 ## Reading comments (for idempotency)
 
-Before proposing a comment, you need to know what's already on the ticket. See `_issue-match.md` for the timestamp-based idempotency protocol (comment bodies don't carry SHAs, so idempotency is "is my last comment newer than the latest matched commit?"). The CLI invocation is:
+Before proposing a comment, you need to know what's already on the ticket. See `issue-match.md` for the timestamp-based idempotency protocol (comment bodies don't carry SHAs, so idempotency is "is my last comment newer than the latest matched commit?"). The CLI invocation is:
 
 ```bash
 jira issue view <KEY> --plain --comments 20

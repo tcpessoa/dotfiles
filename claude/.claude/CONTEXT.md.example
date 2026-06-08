@@ -23,7 +23,7 @@ Below is a template covering the dimensions the commands care about. Delete sect
 
 - **Daily notes**: `<absolute path to the directory containing YYYY-MM-DD.md files>`
   - File shape: each daily note has user-written sections `## 🗒️ Brain dump` and `## 🔖 Hemingway bridge`, plus a bounded `<!-- AI:START --> ... <!-- AI:END -->` block the commands manage. If your shape differs, describe it here.
-- **THREADS.md** (optional): `<absolute path or "none">` — the living index of half-finished ideas from past brain dumps. See `~/.claude/commands/_threads.md` for the format. Omit if you don't use it.
+- **THREADS.md** (optional): `<absolute path or "none">` — the living index of half-finished ideas from past brain dumps. See `~/.claude/skills/_shared/threads.md` for the format. Omit if you don't use it.
 - **Code root** (optional): `<absolute path under which your repos live>` — used by `review-changes` and for "cd into the repo" suggestions. Omit if your repos are scattered.
 
 ## Issue tracker
@@ -36,7 +36,7 @@ Pick one. The commands adapt their flow based on this section.
 Tracker: Jira
 CLI: jira (https://github.com/ankitpokhrel/jira-cli)
 Auth: configured at ~/.config/.jira/.config.yml as user <username>
-Reference: see ~/.claude/commands/_jira-cli.md for CLI quirks and reusable JQL.
+Reference: see ~/.claude/skills/_shared/jira-cli.md for CLI quirks and reusable JQL.
 Projects: <PROJ1>, <PROJ2>, <PROJ3>  # which project keys belong to you
 Default project for new tickets: <PROJ1>
 Required fields on create:
@@ -87,7 +87,7 @@ This section is what `/morning` reads to answer "which repo should I cd into for
 Anything about how you work that the commands should respect. Examples:
 
 - Commit / branch / PR style (conventional commits, branch naming with ticket keys, etc.)
-- Comment voice — who reads Jira/issue comments? PMs? Engineers only? This shapes how `/checkpoint` and `/end-of-day` write `Update:` comments. (For Jira-specific guidance, see `_jira-cli.md` § Comment voice.)
+- Comment voice — who reads Jira/issue comments? PMs? Engineers only? This shapes how `/checkpoint` and `/end-of-day` write `Update:` comments. (For Jira-specific guidance, see `jira-cli.md` § Comment voice.)
 - Ticket creation conventions (assign to self, add to current sprint, required custom fields, etc.)
 - Weekday assumption — if you work Mon–Fri, `/morning` on Monday looks back to Friday.
 

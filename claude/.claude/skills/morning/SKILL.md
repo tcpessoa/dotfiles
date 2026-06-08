@@ -1,4 +1,5 @@
 ---
+name: morning
 description: Morning standup — pull yesterday's bridge, recent commits, tracker state, and suggest what to start on. Writes today's AI block on confirmation.
 ---
 
@@ -17,17 +18,17 @@ Everything downstream depends on this file: daily-notes directory, THREADS.md lo
 
 ## Helpers (read these next)
 
-- `~/.claude/commands/_daily-notes.md` — how to read the last 7 daily entries and write today's AI block.
-- `~/.claude/commands/_threads.md` — THREADS.md format and read protocol.
-- `~/.claude/commands/_propose-apply.md` — propose-first rule; apply only on `go`.
-- **If `CONTEXT.md` says `Tracker: Jira`**: also read `~/.claude/commands/_jira-cli.md` — CLI quirks (4 gotchas) + reusable JQL. Skip if your tracker is `gh` or `none`.
+- `~/.claude/skills/_shared/daily-notes.md` — how to read the last 7 daily entries and write today's AI block.
+- `~/.claude/skills/_shared/threads.md` — THREADS.md format and read protocol.
+- `~/.claude/skills/_shared/propose-apply.md` — propose-first rule; apply only on `go`.
+- **If `CONTEXT.md` says `Tracker: Jira`**: also read `~/.claude/skills/_shared/jira-cli.md` — CLI quirks (4 gotchas) + reusable JQL. Skip if your tracker is `gh` or `none`.
 
 ## Step 1 — Load context
 
 In parallel:
 - Re-read `CONTEXT.md` if you haven't kept its contents in mind — you'll need the routing/glossary section to map tickets to repos.
 - Read `THREADS.md` (path from `CONTEXT.md`; skip if the user doesn't keep one).
-- Read the **last 7 daily entries before today** per `_daily-notes.md` (full files, AI blocks included). These are your cross-day memory.
+- Read the **last 7 daily entries before today** per `daily-notes.md` (full files, AI blocks included). These are your cross-day memory.
 - Read today's daily file (if it exists) — note any existing AI block from a prior run today.
 
 The single most important thing you're looking for: **yesterday's `## 🔖 Hemingway bridge`** (or the most recent prior weekday's, if yesterday was a weekend). That's the user's own forward-looking note about where they left off. It's your continuity anchor — quote it back to them.
@@ -44,7 +45,7 @@ Branch on `CONTEXT.md` § Issue tracker:
 
 ### If `Tracker: Jira`
 
-Run these 4 queries in parallel (per `_jira-cli.md` — always include `project IS NOT EMPTY`, never put `ORDER BY` inside `-q`):
+Run these 4 queries in parallel (per `jira-cli.md` — always include `project IS NOT EMPTY`, never put `ORDER BY` inside `-q`):
 
 ```bash
 # (a) Active sprint — assignee me, all projects, all statuses
@@ -156,7 +157,7 @@ For the **Standup snippet**: copy-pasteable, use ticket keys not free-form repo 
 
 ## Step 5 — Propose today's AI block
 
-Per `_daily-notes.md`, propose the AI block to write into today's daily note. Shape (morning variant):
+Per `daily-notes.md`, propose the AI block to write into today's daily note. Shape (morning variant):
 
 ```markdown
 <!-- AI:START -->
@@ -175,7 +176,7 @@ Per `_daily-notes.md`, propose the AI block to write into today's daily note. Sh
 <!-- AI:END -->
 ```
 
-Show it in chat, then add the standard "Reply `go` to write this to today's daily note" footer per `_propose-apply.md`.
+Show it in chat, then add the standard "Reply `go` to write this to today's daily note" footer per `propose-apply.md`.
 
 ## Step 6 — Propose CONTEXT.md updates
 
@@ -188,7 +189,7 @@ If anything, append a short "📝 Proposed updates to CONTEXT.md" section. Don't
 
 ## Step 7 — Apply on confirmation
 
-When user says `go`: write today's AI block per `_daily-notes.md`. Then apply any `CONTEXT.md` edits if those were also approved. Print confirmations.
+When user says `go`: write today's AI block per `daily-notes.md`. Then apply any `CONTEXT.md` edits if those were also approved. Print confirmations.
 
 ## Tone
 

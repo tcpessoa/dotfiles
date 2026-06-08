@@ -59,7 +59,7 @@ Compute on each `/checkpoint` or `/end-of-day` run. Always **propose** — never
 
 ## Apply order
 
-Thread edits piggyback on each command's existing propose-first cycle (see `_propose-apply.md`).
+Thread edits piggyback on each command's existing propose-first cycle (see `propose-apply.md`).
 
 - `/checkpoint` apply order: Jira comments → **THREADS.md deletions** → AI block.
 - `/end-of-day` apply order: Jira comments → new Jira tickets → **THREADS.md edits** → AI block.
@@ -81,5 +81,5 @@ In `/checkpoint` and `/end-of-day`: a section titled `### 🧶 Thread updates (T
 
 ## Related
 
-- `_daily-notes.md` — how AI blocks summarize thread activity ("Threads changed: X added, Y deleted").
-- `_propose-apply.md` — the propose-first contract this layers onto.
+- `daily-notes.md` — how AI blocks summarize thread activity ("Threads changed: X added, Y deleted").
+- `propose-apply.md` — the propose-first contract this layers onto.

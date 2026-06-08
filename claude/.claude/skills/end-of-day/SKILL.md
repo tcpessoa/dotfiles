@@ -1,4 +1,5 @@
 ---
+name: end-of-day
 description: End-of-day wrap — tracker comments, untracked-work tickets, draft tomorrow's Hemingway bridge, write today's AI block. Always proposes first.
 ---
 
@@ -16,18 +17,18 @@ If `Tracker: none`, this command degrades to: commit summary, threads update, He
 
 ## Helpers (read these next)
 
-- `~/.claude/commands/_issue-match.md` — matching protocol + **timestamp idempotency** (important — if `/checkpoint` already commented earlier, don't re-post).
-- `~/.claude/commands/_daily-notes.md` — context loading + AI block write.
-- `~/.claude/commands/_threads.md` — THREADS.md format and update protocol.
-- `~/.claude/commands/_propose-apply.md` — propose-first rule.
-- **If `Tracker: Jira`**: also read `~/.claude/commands/_jira-cli.md` — CLI quirks + apply order + Comment voice.
+- `~/.claude/skills/_shared/issue-match.md` — matching protocol + **timestamp idempotency** (important — if `/checkpoint` already commented earlier, don't re-post).
+- `~/.claude/skills/_shared/daily-notes.md` — context loading + AI block write.
+- `~/.claude/skills/_shared/threads.md` — THREADS.md format and update protocol.
+- `~/.claude/skills/_shared/propose-apply.md` — propose-first rule.
+- **If `Tracker: Jira`**: also read `~/.claude/skills/_shared/jira-cli.md` — CLI quirks + apply order + Comment voice.
 
 ## Step 1 — Load context
 
 In parallel:
 - Re-read `CONTEXT.md` if needed (routing / glossary section).
 - Read `THREADS.md` (path from `CONTEXT.md`; skip if none).
-- Read the **last 7 daily entries before today** per `_daily-notes.md`.
+- Read the **last 7 daily entries before today** per `daily-notes.md`.
 - Read **today's daily file** — especially:
   - The existing AI block (if `/morning` or `/checkpoint` ran today). It records what's already been done.
   - Today's `## 🗒️ Brain dump` — if the user wrote thoughts there, they're context for what really happened today.
@@ -42,7 +43,7 @@ If nothing today: skip ahead to Step 5 (Hemingway bridge reflection) — even a 
 
 Skip this step entirely if `Tracker: none` — go to Step 3.5.
 
-Per `_issue-match.md`:
+Per `issue-match.md`:
 
 1. Pull open tickets/issues:
    - Jira: `jira issue list -q'(assignee = currentUser() OR reporter = currentUser()) AND statusCategory != Done AND project IS NOT EMPTY' --plain --columns key,status,priority,summary --no-truncate`
@@ -55,7 +56,7 @@ Per `_issue-match.md`:
 
 Skip if the user doesn't keep a THREADS.md.
 
-Per `_threads.md`. Propose four kinds of edits — only show non-empty buckets in the output:
+Per `threads.md`. Propose four kinds of edits — only show non-empty buckets in the output:
 
 1. **Delete (done)** — for each 🔥 Open thread, check whether today's commits, new tracker comments, or new tickets you're about to create topically resolve it. If yes → delete. Also: any 🔥 entry marked inline with `✅ this is done` (or similar) → delete.
 2. **Add (new from today)** — scan today's `## 🗒️ Brain dump` permissively for any intent / idea / observation not already in THREADS.md → propose adding as 🔥. Include ambiguous fragments; user triages on `go`.
@@ -160,15 +161,15 @@ Reply `go` to apply everything: tracker comments, new tickets, AI block, and (op
 
 ## Step 7 — Apply on confirmation
 
-Per `_propose-apply.md`:
+Per `propose-apply.md`:
 1. For each existing-ticket comment:
    - Jira: `jira issue comment add <KEY> "<body>"`
    - gh: `gh issue comment <N> -R <repo> -b "<body>"`
 2. For each new ticket:
    - Jira: `jira issue create -p<PROJECT> -t<TYPE> -s"<summary>" -b"<description>"` — if the project has extra required fields, let `jira issue create` prompt; tell the user "this one needs a few extra fields, answer them."
    - gh: `gh issue create -R <repo> -t "<summary>" -b "<description>" [-l <labels>] [-a @me]`
-3. Apply approved THREADS.md edits per `_threads.md` (deletions, additions, demotions, promotions). Recompute section count headers.
-4. Update today's AI block per `_daily-notes.md` (with the "Suggested Hemingway bridge for today" subsection populated and "Carryover for tomorrow" filled).
+3. Apply approved THREADS.md edits per `threads.md` (deletions, additions, demotions, promotions). Recompute section count headers.
+4. Update today's AI block per `daily-notes.md` (with the "Suggested Hemingway bridge for today" subsection populated and "Carryover for tomorrow" filled).
 5. Apply CONTEXT.md edits if approved.
 6. Print confirmations.
 

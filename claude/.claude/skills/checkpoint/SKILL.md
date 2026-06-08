@@ -1,4 +1,5 @@
 ---
+name: checkpoint
 description: Mid-day checkpoint — what shipped since last run, what's next, idempotent tracker comments. Safe to run multiple times a day.
 ---
 
@@ -10,11 +11,11 @@ Read `CONTEXT.md` (cwd, then `~/.claude/CONTEXT.md`). It tells you who the user 
 
 ## Helpers (read these next)
 
-- `~/.claude/commands/_issue-match.md` — commit→ticket matching protocol + **timestamp-based idempotency check**.
-- `~/.claude/commands/_daily-notes.md` — context loading + AI block write.
-- `~/.claude/commands/_threads.md` — THREADS.md format and update protocol.
-- `~/.claude/commands/_propose-apply.md` — propose-first rule; apply only on `go`.
-- **If `CONTEXT.md` says `Tracker: Jira`**: also read `~/.claude/commands/_jira-cli.md` — CLI quirks + apply order. Skip otherwise.
+- `~/.claude/skills/_shared/issue-match.md` — commit→ticket matching protocol + **timestamp-based idempotency check**.
+- `~/.claude/skills/_shared/daily-notes.md` — context loading + AI block write.
+- `~/.claude/skills/_shared/threads.md` — THREADS.md format and update protocol.
+- `~/.claude/skills/_shared/propose-apply.md` — propose-first rule; apply only on `go`.
+- **If `CONTEXT.md` says `Tracker: Jira`**: also read `~/.claude/skills/_shared/jira-cli.md` — CLI quirks + apply order. Skip otherwise.
 
 If `Tracker: none`, this command degrades to: scan commits, update threads/AI block. No tracker queries, no comments. Useful for "where am I" mid-day resets on personal projects.
 
@@ -23,7 +24,7 @@ If `Tracker: none`, this command degrades to: scan commits, update threads/AI bl
 In parallel:
 - Re-read `CONTEXT.md` if needed (routing / glossary section).
 - Read `THREADS.md` (path from `CONTEXT.md`; skip if none).
-- Read the **last 7 daily entries before today** per `_daily-notes.md` (full files, AI blocks included).
+- Read the **last 7 daily entries before today** per `daily-notes.md` (full files, AI blocks included).
 - Read **today's daily file** if it exists — especially the existing AI block. If `/morning` or a prior `/checkpoint` ran today, you'll find their breadcrumbs there.
 
 The today's AI block tells you what's already been recorded, so you don't repeat it.
@@ -57,10 +58,10 @@ gh search issues --assignee=@me --state=open --json repository,number,title,labe
 
 ## Step 4 — Match commits and run idempotency check
 
-Follow `_issue-match.md`:
+Follow `issue-match.md`:
 
 1. Match each commit (branch key → explicit key → topic similarity).
-2. **For every matched ticket, fetch its recent comments** and run the **timestamp-based idempotency check** (see `_issue-match.md` § Idempotency): if the user's most recent comment on the ticket is newer than the latest matched commit, skip; otherwise propose a new `Update:` comment summarizing the progress topically. **No commit SHAs in the body** — see `_jira-cli.md` § Comment voice (the rule applies to gh comments too: PM-readable, no plumbing).
+2. **For every matched ticket, fetch its recent comments** and run the **timestamp-based idempotency check** (see `issue-match.md` § Idempotency): if the user's most recent comment on the ticket is newer than the latest matched commit, skip; otherwise propose a new `Update:` comment summarizing the progress topically. **No commit SHAs in the body** — see `jira-cli.md` § Comment voice (the rule applies to gh comments too: PM-readable, no plumbing).
 3. Group remaining commits by ticket.
 
 Fetching comments:
@@ -73,7 +74,7 @@ If after filtering there's nothing left to post, say so plainly. Still offer to 
 
 ## Step 4.5 — Match commits/comments against open threads
 
-Per `_threads.md`: for each 🔥 Open thread in THREADS.md, check whether today's commits or the tracker comments you're about to post topically resolve it. If yes, propose **deleting** the entry (done = deleted). Also: if the user marked any 🔥 entry inline with `✅ this is done` (or similar), propose deletion of that entry too.
+Per `threads.md`: for each 🔥 Open thread in THREADS.md, check whether today's commits or the tracker comments you're about to post topically resolve it. If yes, propose **deleting** the entry (done = deleted). Also: if the user marked any 🔥 entry inline with `✅ this is done` (or similar), propose deletion of that entry too.
 
 **`/checkpoint` does NOT propose new threads, demotions, or promotions** — defer to `/end-of-day`, mirroring how it defers new tickets.
 
@@ -135,12 +136,12 @@ Reply `go` to apply everything above. Or selectively: `apply 1`, `skip ai`, `cha
 
 ## Step 7 — Apply on confirmation
 
-Per `_propose-apply.md`:
+Per `propose-apply.md`:
 1. For each existing-ticket comment:
    - Jira: `jira issue comment add <KEY> "<body>"`
    - gh: `gh issue comment <N> -R <repo> -b "<body>"`
-2. Apply approved THREADS.md deletions (per `_threads.md`). Recompute the section count headers.
-3. Update today's AI block per `_daily-notes.md`.
+2. Apply approved THREADS.md deletions (per `threads.md`). Recompute the section count headers.
+3. Update today's AI block per `daily-notes.md`.
 4. Print confirmations.
 
 ## Tone

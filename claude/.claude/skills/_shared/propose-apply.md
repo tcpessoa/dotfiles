@@ -23,11 +23,11 @@ If there's nothing to apply (e.g., morning with no Jira writes proposed and you'
 
 ## Apply order on "go"
 
-Tracker-specific details live in the helper for the tracker you're using (e.g., `_jira-cli.md` § "Writing — commands and apply order"). Generic order:
+Tracker-specific details live in the helper for the tracker you're using (e.g., `jira-cli.md` § "Writing — commands and apply order"). Generic order:
 
 1. Comments on existing tickets/issues.
 2. New ticket/issue creations.
-3. Daily-note AI block update (per `_daily-notes.md`).
+3. Daily-note AI block update (per `daily-notes.md`).
 4. THREADS.md edits (if the workspace keeps one).
 5. CONTEXT.md edits (if any were approved).
 6. Print confirmations after each step:
@@ -44,8 +44,8 @@ The user can fix the issue and re-issue `go` for the remainder.
 ## Idempotency
 
 Re-running the same command later in the day must be safe:
-- Comments: timestamp-based idempotency per `_issue-match.md` — skip commits already covered by a newer user comment.
-- Daily-note AI block: replaced wholesale per `_daily-notes.md` — no append duplication.
+- Comments: timestamp-based idempotency per `issue-match.md` — skip commits already covered by a newer user comment.
+- Daily-note AI block: replaced wholesale per `daily-notes.md` — no append duplication.
 
 If everything that would be proposed is already covered, say so plainly ("Nothing new since last run — no tracker writes needed. Refresh the AI block anyway?") rather than presenting an empty plan.
 
