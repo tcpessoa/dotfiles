@@ -20,31 +20,26 @@ if ! command -v brew &>/dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-# Install Oh My Zsh if not installed
-if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-    echo "Installing Oh My Zsh..."
-    sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-    
-    # Make sure we're still using Zsh
-    if [[ "$SHELL" != *"zsh"* ]]; then
-        echo "Changing default shell to Zsh..."
-        chsh -s "$(command -v zsh)"
-    fi
+# Ensure the default shell is Zsh (no framework — config is self-contained in ~/.config/zsh)
+if [[ "$SHELL" != *"zsh"* ]]; then
+    echo "Changing default shell to Zsh..."
+    chsh -s "$(command -v zsh)"
 fi
 
-# ZSH plugins
-ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+# ZSH plugins (standalone, sourced directly by ~/.config/zsh/.zshrc)
+ZSH_PLUGIN_DIR="$HOME/.local/share/zsh/plugins"
+mkdir -p "$ZSH_PLUGIN_DIR"
 
-if [[ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]]; then
+if [[ ! -d "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting" ]]; then
     echo "Installing Zsh syntax highlighting..."
     git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git \
-        "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+        "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting"
 fi
 
-if [[ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]]; then
+if [[ ! -d "$ZSH_PLUGIN_DIR/zsh-autosuggestions" ]]; then
     echo "Installing Zsh autosuggestions..."
     git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions.git \
-        "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+        "$ZSH_PLUGIN_DIR/zsh-autosuggestions"
 fi
 
 # TPM (Tmux Plugin Manager)
