@@ -14,6 +14,7 @@ THREADS.md is the living index of half-finished ideas, intents, and observations
 
 ## 🔥 Open (N)
 ### <theme title>
+- **Track:** <A / B / Visibility / LC / Job hunt / — (life/self-knowledge)> — present only if the workspace keeps a PRIORITIES.md; maps the thread to one PRIORITIES track. Skip the field entirely if there's no PRIORITIES.md.
 - **Span:** YYYY-MM-DD → YYYY-MM-DD (N mentions)
 - **Summary:** <one line>
 - **Recent quote:** `YYYY-MM-DD` — "<short>"

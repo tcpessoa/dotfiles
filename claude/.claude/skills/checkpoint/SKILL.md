@@ -14,6 +14,7 @@ Read `CONTEXT.md` (cwd, then `~/.claude/CONTEXT.md`). It tells you who the user 
 - `~/.claude/skills/_shared/issue-match.md` — commit→ticket matching protocol + **timestamp-based idempotency check**.
 - `~/.claude/skills/_shared/daily-notes.md` — context loading + AI block write.
 - `~/.claude/skills/_shared/threads.md` — THREADS.md format and update protocol.
+- `~/.claude/skills/_shared/priorities.md` — PRIORITIES.md protocol: track weighting for "what's next". Skip if the workspace has no PRIORITIES.md.
 - `~/.claude/skills/_shared/propose-apply.md` — propose-first rule; apply only on `go`.
 - **If `CONTEXT.md` says `Tracker: Jira`**: also read `~/.claude/skills/_shared/jira-cli.md` — CLI quirks + apply order. Skip otherwise.
 
@@ -24,6 +25,7 @@ If `Tracker: none`, this command degrades to: scan commits, update threads/AI bl
 In parallel:
 - Re-read `CONTEXT.md` if needed (routing / glossary section).
 - Read `THREADS.md` (path from `CONTEXT.md`; skip if none).
+- Read `PRIORITIES.md` (path from `CONTEXT.md`; skip if none) per `priorities.md` — tracks & weights, to keep "what's next" pointed at the right track.
 - Read the **last 7 daily entries before today** per `daily-notes.md` (full files, AI blocks included).
 - Read **today's daily file** if it exists — especially the existing AI block. If `/morning` or a prior `/checkpoint` ran today, you'll find their breadcrumbs there.
 
@@ -88,6 +90,8 @@ Lightweight, NOT a full sprint/issues re-scan. Look at:
 - The just-shipped commits — what's the obvious next subtask?
 
 Surface 1–3 candidates max, with one-line "why." Continuation > novelty. Don't pull all backlog tickets.
+
+If a PRIORITIES.md exists and continuity is neutral (no obvious in-flight pickup), prefer a candidate from the **highest-weight track that's been quiet today** per `priorities.md` — one nudge, not a lecture.
 
 If the user has clearly switched contexts (e.g., the just-shipped commits are on a different ticket than morning's pick), flag it: "you started on <KEY-A> this morning but today's commits are all on <KEY-B> — update the plan?"
 

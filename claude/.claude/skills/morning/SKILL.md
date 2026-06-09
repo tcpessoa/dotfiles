@@ -5,6 +5,8 @@ description: Morning standup — pull yesterday's bridge, recent commits, tracke
 
 You are starting the user's workday. Be concise — this is a quick orientation, not an essay.
 
+This skill runs an **OODA loop** over the workspace files (see the target `CONTEXT.md` → "How my system thinks"). Steps are annotated with their role: **Observe** (commits) → **Orient** (CONTEXT + PRIORITIES + THREADS + recent daily) → **Decide** (the pick). Re-reading THREADS/daily *is* part of Orient, not a separate step.
+
 ## Step 0 — Load workspace context
 
 **First**, read `CONTEXT.md` to learn who the user is, where their daily notes and repos live, what issue tracker (if any) they use, and any local conventions. Resolution order:
@@ -20,24 +22,29 @@ Everything downstream depends on this file: daily-notes directory, THREADS.md lo
 
 - `~/.claude/skills/_shared/daily-notes.md` — how to read the last 7 daily entries and write today's AI block.
 - `~/.claude/skills/_shared/threads.md` — THREADS.md format and read protocol.
+- `~/.claude/skills/_shared/priorities.md` — PRIORITIES.md protocol: track weighting, commit-to-track balance, how it weights the pick. Skip if the workspace has no PRIORITIES.md.
 - `~/.claude/skills/_shared/propose-apply.md` — propose-first rule; apply only on `go`.
 - **If `CONTEXT.md` says `Tracker: Jira`**: also read `~/.claude/skills/_shared/jira-cli.md` — CLI quirks (4 gotchas) + reusable JQL. Skip if your tracker is `gh` or `none`.
 
-## Step 1 — Load context
+## Step 1 — Load context (Orient)
 
 In parallel:
 - Re-read `CONTEXT.md` if you haven't kept its contents in mind — you'll need the routing/glossary section to map tickets to repos.
 - Read `THREADS.md` (path from `CONTEXT.md`; skip if the user doesn't keep one).
+- Read `PRIORITIES.md` (path from `CONTEXT.md`; skip if none) per `priorities.md` — load the **tracks & weights**, the **repo→track map** (for Step 2's balance), and the **Protected/fixed** blocks (constraints, never commit-counted).
 - Read the **last 7 daily entries before today** per `daily-notes.md` (full files, AI blocks included). These are your cross-day memory.
 - Read today's daily file (if it exists) — note any existing AI block from a prior run today.
+- Count files in `0-Inbox/` under the vault (observe-only — do **not** process them here; that's `/process-inbox`). You'll surface the count in the digest.
 
 The single most important thing you're looking for: **yesterday's `## 🔖 Hemingway bridge`** (or the most recent prior weekday's, if yesterday was a weekend). That's the user's own forward-looking note about where they left off. It's your continuity anchor — quote it back to them.
 
-## Step 2 — Pull yesterday's commits (continuity)
+## Step 2 — Pull commits (Observe)
 
-Run `review-changes -y` (script lives in the user's `PATH` — typically `~/dotfiles/bin/.local/bin/review-changes`). If today is Monday, use `review-changes --since "$(date -v-3d +%Y-%m-%d)"` to cover Friday — assume weekday work unless `CONTEXT.md` says otherwise.
+Run `review-changes -y` (script lives in the user's `PATH` — typically `~/dotfiles/bin/.local/bin/review-changes`). If today is Monday, use `review-changes --since "$(date -v-3d +%Y-%m-%d)"` to cover Friday — assume weekday work unless `CONTEXT.md` says otherwise. This is the **continuity** scan (what happened yesterday).
 
 `review-changes` walks every repo under the code root (from `CONTEXT.md`) using each repo's local git identity, so author filtering is implicit. If `CONTEXT.md` doesn't declare a code root, ask the user where their repos live before scanning.
+
+**If the workspace has a PRIORITIES.md**, also run the **7-day balance scan** per `priorities.md`: `review-changes --since "$(date -v-7d +%Y-%m-%d)"`, attribute each repo to a track via the repo→track map, and tally per-track commit counts. This feeds the ⚖️ Track balance line and the priority-weighted pick in Step 4. Keep it cheap — counts only, no per-commit detail.
 
 ## Step 3 — Pull current tracker state
 
@@ -95,7 +102,7 @@ For 2–3 tickets/issues you're about to recommend, fetch detail lazily:
 - Jira: `jira issue view <KEY> --plain`
 - gh: `gh issue view <N> -R <repo>`
 
-## Step 4 — Present the digest
+## Step 4 — Present the digest (Decide)
 
 Skip empty sections. Use ticket/issue keys as the user's tracker formats them (`<PROJECT>-NNN` for Jira, `owner/repo#N` or `#N` for gh).
 
@@ -106,6 +113,12 @@ Skip empty sections. Use ticket/issue keys as the user's tracker formats them (`
 ## 🕐 Yesterday recap
 - <repo>: <N> commits on `<branch>` — <topic>
 - <repo>: <N> commits on `<branch>` — <topic>
+
+## ⚖️ Track balance (last 7d)                (skip if no PRIORITIES.md)
+<one line: per-track commit counts vs declared weight, flagging any starved Primary/leverage track — see priorities.md>
+
+## 📥 Inbox                                  (skip if 0 or no 0-Inbox/)
+<N> unprocessed in `0-Inbox/` → run `/process-inbox` (not handled here)
 
 ## 🏃 Active sprint / Open assigned       (skip section if Tracker: none)
 - <KEY> (priority, status) — <summary> → <repo>
@@ -145,11 +158,12 @@ Rules for picking the top pick:
 
 1. **Bridge wins**: if yesterday's Hemingway bridge points somewhere concrete and maps to an open ticket (or to a repo with active work), that's the default pick.
 2. Else, **continuity wins**: yesterday's commits → matching open ticket / branch in progress.
-3. Else, in-progress sprint/labeled tickets (continuation > new start).
-4. Else, highest priority in active sprint / "high priority" label set.
-5. Else, highest priority anywhere.
-6. Tie-break with most-recently-updated.
-7. If no obvious repo from `CONTEXT.md`, say so and guess from ticket text + an `ls` of the code root.
+3. Else, **priority-weighting** (per `priorities.md`): if the ⚖️ balance shows a **Primary or leverage track starved** (~0 activity over 7d), bias the pick toward it — surface that track's top `THREADS` next-action as the pick or the first "Also consider." Continuity (1–2) still outranks this; it only breaks the tie when nothing's in flight.
+4. Else, in-progress sprint/labeled tickets (continuation > new start).
+5. Else, highest priority in active sprint / "high priority" label set.
+6. Else, highest priority anywhere.
+7. Tie-break with most-recently-updated.
+8. If no obvious repo from `CONTEXT.md`, say so and guess from ticket text + an `ls` of the code root.
 
 **Threads in "Also consider":** when the top pick is blocked (awaiting review, dependency, external answer), include 1–2 🔥 Open threads in the "Also consider" list as opportunistic options — phrased as "if you have time, also work on X." Threads are never the top pick (they don't have a ticket); they only appear as fallback options.
 
