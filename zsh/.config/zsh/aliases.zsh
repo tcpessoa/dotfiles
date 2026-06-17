@@ -9,6 +9,7 @@ alias szsh="source ~/.config/zsh/.zshrc"
 ## NVIM
 alias v='nvim'
 
+alias c='claude'
 ## opencode
 alias oc='opencode'
 
