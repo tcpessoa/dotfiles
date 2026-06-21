@@ -7,8 +7,10 @@ docker
 eza
 fd
 fzf
+gh
 git-delta
 go
+helm
 jq
 kubectx
 kubernetes-cli

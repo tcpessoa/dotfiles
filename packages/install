@@ -21,7 +21,6 @@ cask_packages=(
     font-hack-nerd-font
     ghostty
     karabiner-elements
-    postman
     rectangle
     visual-studio-code
 )
