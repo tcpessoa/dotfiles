@@ -26,6 +26,11 @@ cask_packages=(
     visual-studio-code
 )
 
+# Keg-only formulae: brew installs them but won't symlink them onto PATH.
+# These get an idempotent `brew link --force` after the install pass,
+# so they self-heal even if already installed-but-unlinked.
+keg_only_force_link=(libpq)
+
 get_special_install() {
     local package=$1
     for i in "${!special_install_packages[@]}"; do
@@ -150,6 +155,14 @@ if [ -d "$HOST_DIR" ]; then
         fi
     done
 fi
+
+# Force-link keg-only formulae (idempotent; safe if already linked).
+for keg in "${keg_only_force_link[@]}"; do
+    if brew list 2>/dev/null | tr ' ' '\n' | grep -Fx "$keg" >/dev/null; then
+        echo "Force-linking keg-only formula $keg..."
+        brew link --force "$keg" >/dev/null && echo "✓ Linked $keg"
+    fi
+done
 
 if [ -f "${SCRIPT_DIR}/health" ]; then
     echo "Running health check..."

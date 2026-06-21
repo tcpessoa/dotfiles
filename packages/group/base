@@ -13,6 +13,10 @@ jq
 kubectx
 kubernetes-cli
 lazygit
+# libpq: keg-only postgres client (psql, pg_dump) — no server.
+# Keg-only means brew won't symlink it onto PATH automatically; run:
+#   brew link --force libpq
+libpq
 neovim
 nvm
 pnpm
