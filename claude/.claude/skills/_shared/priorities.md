@@ -38,7 +38,8 @@ This is what makes the skills *steer* rather than merely *record*.
 Insert priority-weighting into the pick logic, *below* continuity:
 
 - **Bridge / continuity still win** — never abandon genuine in-flight work to chase a starved track.
-- **When nothing in-flight forces the choice**, bias the pick toward the **highest-weight track that's starved** in the balance check. Surface that track's top `THREADS` next-action as the pick, or as the first "Also consider."
+- **Never pick from a Dormant track.** A dormant track is one the user deliberately stopped spending hours on; surfacing its threads as the pick fights the intention the file encodes. Its items are background context at most, never the pick (unless *nothing* active exists — then say so).
+- **When nothing in-flight forces the choice**, bias the pick toward the **highest-weight track that's starved** in the balance check. Surface that track's top `THREADS` next-action as the pick, or as the first "Also consider" — but only if that next-action passes the actionability gate (a startable task, not a wait-state).
 - In `/checkpoint` and `/end-of-day`, apply the same rule with a lighter touch: when "what's next" / the bridge is otherwise neutral, prefer the starved high-weight track.
 
 ## Tone

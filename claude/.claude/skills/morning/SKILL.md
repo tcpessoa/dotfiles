@@ -137,6 +137,10 @@ Skip empty sections. Use ticket/issue keys as the user's tracker formats them (`
 _From THREADS.md — half-finished ideas / intents not (yet) ticketed. Surface if you have time._
 - <theme> — <one-line summary> (last seen YYYY-MM-DD)
 
+## 🛡️ Guards (skip if none)
+_Blocked / waiting-on-others / date-anchored items that gate something but are NOT today's work. These are constraints, not tasks — surface them so they're visible, never as the pick._
+- <item> — <what it's waiting on / the deadline it guards>
+
 ## 🎯 Today's pick
 **<KEY-or-thread>** — <one-line why (lean on yesterday's bridge if it points somewhere)>
 Repo: `<absolute path to the repo>`
@@ -154,7 +158,13 @@ Also consider:
 
 If `Tracker: none`, drop the "Standup snippet" section (no audience for it) unless `CONTEXT.md` says otherwise.
 
-Rules for picking the top pick:
+**Pick preconditions (apply BEFORE the rules below — they filter the candidate set):**
+
+- **Actionability gate.** The pick must be something the user can *start in the next work block* — a command to run, a file to open, a question they can answer themselves. If a candidate's next step is a **wait-state owned by someone else** (awaiting a countersignature, a reply, a review, an external approval), it is **not a pick** — it's a *guard*. Put it on the `🛡️ Guards` line and keep scanning. Never surface a blocked/waiting item as the pick or its "Next step."
+- **Active-track gate.** Prefer a candidate on a **non-dormant** PRIORITIES track. Do not pick from a **Dormant** track unless *nothing* is in flight and no active-track task exists — and if you do, say so explicitly ("nothing in your active tracks forced a choice, so…").
+- **Tasks ≠ life-admin.** Onboarding/visa/paperwork/errands are not tracks. If blocked or date-anchored they go on `🛡️ Guards`; an actionable one can be a brief "Life-admin" aside — but it's the work pick only when no active-track task exists at all.
+
+Rules for picking the top pick (applied to candidates that pass the gates):
 
 1. **Bridge wins**: if yesterday's Hemingway bridge points somewhere concrete and maps to an open ticket (or to a repo with active work), that's the default pick.
 2. Else, **continuity wins**: yesterday's commits → matching open ticket / branch in progress.
@@ -165,7 +175,7 @@ Rules for picking the top pick:
 7. Tie-break with most-recently-updated.
 8. If no obvious repo from `CONTEXT.md`, say so and guess from ticket text + an `ls` of the code root.
 
-**Threads in "Also consider":** when the top pick is blocked (awaiting review, dependency, external answer), include 1–2 🔥 Open threads in the "Also consider" list as opportunistic options — phrased as "if you have time, also work on X." Threads are never the top pick (they don't have a ticket); they only appear as fallback options.
+**Threads in "Also consider":** when the top pick is blocked (awaiting review, dependency, external answer), include 1–2 🔥 Open threads in the "Also consider" list as opportunistic options — phrased as "if you have time, also work on X." Threads are never the top pick (they don't have a ticket); they only appear as fallback options. **A thread's `Next action` is only a valid candidate if it passes the actionability gate** — if that next action is itself a wait-state, it's a guard, not an "Also consider."
 
 For the **Standup snippet**: copy-pasteable, use ticket keys not free-form repo names. If yesterday's commits have no matching ticket, say "untracked work in `<repo>` — should I `/end-of-day` to file tickets?"
 
