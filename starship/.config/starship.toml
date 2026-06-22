@@ -5,7 +5,6 @@ $kubernetes\
 $directory\
 $git_branch\
 $git_state\
-$git_status\
 $cmd_duration\
 $line_break\
 $python\
@@ -23,7 +22,11 @@ vimcmd_symbol = "[❮](green)"
 format = "[$branch]($style)"
 style = "bright-white"
 
+# Disabled: git_status scans the whole worktree on every prompt (~20ms here, much
+# worse in large repos). Branch name is all I usually need. Re-enable by flipping
+# disabled and re-adding $git_status to the format above.
 [git_status]
+disabled = true
 format = "[[(*$conflicted$untracked$modified$staged$renamed$deleted)](218) ($ahead_behind$stashed)]($style)"
 style = "cyan"
 conflicted = "​"
