@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Picker for Claude agent windows across ALL tmux sessions (run in a tmux popup).
+# Lists each agent window with its state, shows a live preview of that pane,
+# and switches to the selected window on Enter. Ordered: paused, done, running.
+
+RED=$'\033[38;2;228;104;118m'; GRN=$'\033[38;2;152;187;108m'
+YEL=$'\033[38;2;230;195;132m'; RST=$'\033[0m'
+
+rows=""
+for want in paused done running; do
+  while IFS=$'\t' read -r id agent name; do
+    [ "$agent" = "$want" ] || continue
+    case "$want" in
+      paused)  label="${RED}⏸ paused ${RST}" ;;
+      done)    label="${GRN}✓ done   ${RST}" ;;
+      running) label="${YEL}▶ running${RST}" ;;
+    esac
+    rows+="${id}"$'\t'"${label}  ${id}  ${name}"$'\n'
+  done < <(tmux list-windows -a -F '#{session_name}:#{window_index}'$'\t''#{@agent}'$'\t''#{window_name}' 2>/dev/null)
+done
+
+[ -z "$rows" ] && { tmux display-message "No Claude agents running"; exit 0; }
+
+sel="$(printf '%s' "$rows" | fzf --ansi \
+  --delimiter=$'\t' --with-nth=2 \
+  --prompt='agent ▸ ' \
+  --header='enter: switch · esc: cancel' \
+  --preview='tmux capture-pane -ep -t {1} -S -40' \
+  --preview-window='right,60%,wrap')"
+
+[ -z "$sel" ] && exit 0
+tmux switch-client -t "${sel%%$'\t'*}"
