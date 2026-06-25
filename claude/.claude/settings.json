@@ -1,0 +1,30 @@
+{
+  "statusLine": {
+    "type": "command",
+    "command": "claude-statusline"
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": "claude-tmux-title working" }] }
+    ],
+    "PostToolUse": [
+      { "matcher": "*", "hooks": [{ "type": "command", "command": "claude-tmux-title run" }] }
+    ],
+    "Notification": [
+      { "hooks": [{ "type": "command", "command": "claude-tmux-title notify" }] }
+    ],
+    "Stop": [
+      { "hooks": [{ "type": "command", "command": "claude-tmux-title done" }] }
+    ]
+  },
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "editorMode": "vim",
+  "agentPushNotifEnabled": true,
+  "voiceEnabled": true,
+  "enabledPlugins": {
+    "vercel@claude-plugins-official": true
+  }
+}
