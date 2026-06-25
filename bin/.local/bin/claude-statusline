@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# Claude Code status line — kanagawa-pastel palette.
+# Reads the session JSON on stdin, prints one formatted line to stdout.
+# Layout: <dir>  <branch>[ ⌥wt]  <model>  <effort>  <ctx%>[⚠]  <+add/-del>  <5h·7d limits>  <$cost>
+
+input="$(cat)"
+j() { printf '%s' "$input" | jq -r "$1" 2>/dev/null; }
+
+# kanagawa colors (24-bit). Stored as literal escapes; emitted via printf '%b'.
+C_DIR='\033[38;2;145;180;213m'    # blue
+C_GIT='\033[38;2;177;189;137m'    # green
+C_MODEL='\033[38;2;165;158;201m'  # purple
+C_EFFORT='\033[38;2;122;168;159m' # aqua
+C_ADD='\033[38;2;152;187;108m'    # green
+C_DEL='\033[38;2;228;104;118m'    # red
+C_DIM='\033[38;2;114;113;130m'    # muted
+# threshold colors for percentages
+C_LO='\033[38;2;177;189;137m'     # green  (<50%)
+C_MD='\033[38;2;230;195;132m'     # yellow (50-79%)
+C_HI='\033[38;2;228;104;118m'     # red    (>=80%)
+R='\033[0m'
+
+# Pick a threshold color for a (possibly fractional) percentage.
+pct_color() {
+  local p="${1%%.*}"; p="${p:-0}"
+  if   [ "$p" -ge 80 ]; then printf '%s' "$C_HI"
+  elif [ "$p" -ge 50 ]; then printf '%s' "$C_MD"
+  else                       printf '%s' "$C_LO"; fi
+}
+
+dir="$(j '.workspace.current_dir // .cwd // empty')"
+[ -z "$dir" ] && dir="$PWD"
+dir_base="$(basename "$dir")"
+model="$(j '.model.display_name // empty')"
+worktree="$(j '.workspace.git_worktree // empty')"
+effort="$(j '.effort.level // empty')"
+ctx="$(j '.context_window.used_percentage // empty')"
+over200k="$(j '.exceeds_200k_tokens // empty')"
+added="$(j '.cost.total_lines_added // empty')"
+removed="$(j '.cost.total_lines_removed // empty')"
+rl5="$(j '.rate_limits.five_hour.used_percentage // empty')"
+rl5_reset="$(j '.rate_limits.five_hour.resets_at // empty')"
+rl7="$(j '.rate_limits.seven_day.used_percentage // empty')"
+cost="$(j '.cost.total_cost_usd // empty')"
+
+# Current git branch (cheap — rev-parse only, no status scan).
+branch="$(git -C "$dir" rev-parse --abbrev-ref HEAD 2>/dev/null)"
+
+# ---- line 1: where you are + live budget ----
+l1="${C_DIR} ${dir_base}${R}"
+[ -n "$branch" ]   && l1+="  ${C_GIT} ${branch}${R}"
+[ -n "$worktree" ] && l1+="${C_GIT} ⌥${worktree}${R}"
+
+# Context usage, colored by threshold, with a 200k warning.
+if [ -n "$ctx" ]; then
+  l1+="  $(pct_color "$ctx") ${ctx}%${R}"
+  [ "$over200k" = "true" ] && l1+=" ${C_HI}⚠${R}"
+fi
+
+# Lines churned this session (only when something changed).
+if { [ -n "$added" ] && [ "$added" != "0" ]; } || { [ -n "$removed" ] && [ "$removed" != "0" ]; }; then
+  l1+="  ${C_ADD}+${added:-0}${R} ${C_DEL}-${removed:-0}${R}"
+fi
+
+# ---- line 2: model + session meta ----
+l2="${C_MODEL}󰚩 ${model:-?}${R}"
+[ -n "$effort" ] && l2+="  ${C_EFFORT} ${effort}${R}"
+
+# Rate-limit gauges (Claude.ai subscribers only — absent otherwise).
+if [ -n "$rl5" ] || [ -n "$rl7" ]; then
+  l2+="  ${C_DIM}󱎫${R}"
+  if [ -n "$rl5" ]; then
+    l2+=" $(pct_color "$rl5")5h $(printf '%.0f' "$rl5")%${R}"
+    # show when the 5h window resets (local clock time)
+    [ -n "$rl5_reset" ] && l2+="${C_DIM} ↻$(date -r "${rl5_reset%.*}" +%H:%M 2>/dev/null)${R}"
+  fi
+  [ -n "$rl7" ] && l2+="${C_DIM} · ${R}$(pct_color "$rl7")7d $(printf '%.0f' "$rl7")%${R}"
+fi
+
+[ -n "$cost" ] && l2+="  ${C_DIM}\$$(printf '%.2f' "$cost")${R}"
+
+printf '%b\n%b' "$l1" "$l2"
