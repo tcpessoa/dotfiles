@@ -1,31 +1,43 @@
 #!/usr/bin/env bash
 # Picker for Claude agent windows across ALL tmux sessions (run in a tmux popup).
-# Lists each agent window with its state, shows a live preview of that pane,
-# and switches to the selected window on Enter. Ordered: paused, done, running.
+# Grouped by session, and within each session ordered paused -> done -> running.
+# Shows a live (bottom-anchored) preview of the pane; switches to it on Enter.
 
 RED=$'\033[38;2;228;104;118m'; GRN=$'\033[38;2;152;187;108m'
 YEL=$'\033[38;2;230;195;132m'; RST=$'\033[0m'
 
-rows=""
-for want in paused done running; do
-  while IFS=$'\t' read -r id agent name; do
-    [ "$agent" = "$want" ] || continue
-    case "$want" in
-      paused)  label="${RED}⏸ paused${RST}" ;;
-      done)    label="${GRN}✓ done${RST}" ;;
-      running) label="${YEL}▶${RST}" ;;   # symbol only — saves space
-    esac
-    rows+="${id}"$'\t'"${label}  ${id}  ${name}"$'\n'
-  done < <(tmux list-windows -a -F '#{session_name}:#{window_index}'$'\t''#{@agent}'$'\t''#{window_name}' 2>/dev/null)
-done
+# Collect agent windows as: session \t rank \t id \t state \t name
+# rank orders states within a session (paused first); sort groups by session.
+rows="$(tmux list-windows -a \
+  -F '#{session_name}'$'\t''#{@agent}'$'\t''#{session_name}:#{window_index}'$'\t''#{window_name}' 2>/dev/null \
+  | while IFS=$'\t' read -r sess agent id name; do
+      case "$agent" in
+        (paused)  rank=0 ;;
+        (done)    rank=1 ;;
+        (running) rank=2 ;;
+        (*)       continue ;;
+      esac
+      printf '%s\t%s\t%s\t%s\t%s\n' "$sess" "$rank" "$id" "$agent" "$name"
+    done \
+  | sort -t$'\t' -k1,1 -k2,2n)"
 
 [ -z "$rows" ] && { tmux display-message "No Claude agents running"; exit 0; }
+
+# Build the fzf list: field 1 = id (hidden, for preview/switch), field 2 = display.
+fzf_input="$(printf '%s\n' "$rows" | while IFS=$'\t' read -r sess rank id agent name; do
+  case "$agent" in
+    (paused)  label="${RED}⏸ paused${RST}" ;;
+    (done)    label="${GRN}✓ done${RST}" ;;
+    (running) label="${YEL}▶${RST}" ;;
+  esac
+  printf '%s\t%s  %s  %s\n' "$id" "$label" "$id" "$name"
+done)"
 
 # Preview: bottom-anchored tail of the pane. Prepend blank lines, then keep only
 # the last $FZF_PREVIEW_LINES rows, so the most recent output hugs the bottom edge.
 preview='{ yes "" | head -n ${FZF_PREVIEW_LINES:-40}; tmux capture-pane -ep -t {1} -S -${FZF_PREVIEW_LINES:-40}; } | tail -n ${FZF_PREVIEW_LINES:-40}'
 
-sel="$(printf '%s' "$rows" | fzf --ansi \
+sel="$(printf '%s' "$fzf_input" | fzf --ansi \
   --delimiter=$'\t' --with-nth=2 \
   --prompt='agent ▸ ' \
   --header='enter: switch · esc: cancel' \
