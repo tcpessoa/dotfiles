@@ -65,6 +65,13 @@ case "$mode" in
   notify)
     relabel "⏸" paused
     ;;
+  clear)
+    # session ended -> drop state so the cross-session roll-up stops counting it,
+    # and let tmux auto-name the window again.
+    tmux set-option -uw -t "$TMUX_PANE" @agent 2>/dev/null
+    tmux set-option -uw -t "$TMUX_PANE" @agent_color 2>/dev/null
+    tmux set-window-option -t "$TMUX_PANE" automatic-rename on 2>/dev/null
+    ;;
 esac
 
 exit 0
