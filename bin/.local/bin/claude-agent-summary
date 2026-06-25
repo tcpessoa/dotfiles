@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Cross-session roll-up of Claude agent states, for the tmux status-right.
+# Counts windows by their @agent option across ALL sessions and prints a
+# compact, colored summary (emits tmux #[...] style directives; nonzero only).
+#
+#   ⏸N (red)   = agents blocked on a permission prompt — need you now
+#   ✓N (green) = agents finished — your turn
+#   ▶N (yellow)= agents working
+
+paused=0; finished=0; running=0
+while IFS= read -r s; do
+  case "$s" in
+    paused)  paused=$((paused + 1)) ;;
+    done)    finished=$((finished + 1)) ;;
+    running) running=$((running + 1)) ;;
+  esac
+done < <(tmux list-windows -a -F '#{@agent}' 2>/dev/null)
+
+out=""
+[ "$paused"   -gt 0 ] && out+="#[fg=#E46876,bold]⏸${paused}#[default] "
+[ "$finished" -gt 0 ] && out+="#[fg=#98BB6C,bold]✓${finished}#[default] "
+[ "$running"  -gt 0 ] && out+="#[fg=#E6C384]▶${running}#[default] "
+printf '%s' "$out"

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Jump to the next tmux window that needs attention, across ALL sessions.
+# Priority: paused (blocked on permission) first, then done (finished).
+# Skips the current window so repeated presses move you onward.
+
+cur="$(tmux display-message -p '#{session_name}:#{window_index}' 2>/dev/null)"
+target=""
+
+for want in paused done; do
+  while IFS=$'\t' read -r id agent; do
+    if [ "$agent" = "$want" ] && [ "$id" != "$cur" ]; then
+      target="$id"; break
+    fi
+  done < <(tmux list-windows -a -F "#{session_name}:#{window_index}"$'\t'"#{@agent}" 2>/dev/null)
+  [ -n "$target" ] && break
+done
+
+if [ -n "$target" ]; then
+  tmux switch-client -t "$target"
+  tmux display-message "→ agent: $target"
+else
+  tmux display-message "No agents need attention"
+fi
