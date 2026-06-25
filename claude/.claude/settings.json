@@ -15,6 +15,9 @@
     ],
     "Stop": [
       { "hooks": [{ "type": "command", "command": "claude-tmux-title done" }] }
+    ],
+    "SessionEnd": [
+      { "hooks": [{ "type": "command", "command": "claude-tmux-title clear" }] }
     ]
   },
   "voice": {
