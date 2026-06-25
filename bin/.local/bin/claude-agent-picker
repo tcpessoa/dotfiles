@@ -11,9 +11,9 @@ for want in paused done running; do
   while IFS=$'\t' read -r id agent name; do
     [ "$agent" = "$want" ] || continue
     case "$want" in
-      paused)  label="${RED}⏸ paused ${RST}" ;;
-      done)    label="${GRN}✓ done   ${RST}" ;;
-      running) label="${YEL}▶ running${RST}" ;;
+      paused)  label="${RED}⏸ paused${RST}" ;;
+      done)    label="${GRN}✓ done${RST}" ;;
+      running) label="${YEL}▶${RST}" ;;   # symbol only — saves space
     esac
     rows+="${id}"$'\t'"${label}  ${id}  ${name}"$'\n'
   done < <(tmux list-windows -a -F '#{session_name}:#{window_index}'$'\t''#{@agent}'$'\t''#{window_name}' 2>/dev/null)
@@ -21,12 +21,16 @@ done
 
 [ -z "$rows" ] && { tmux display-message "No Claude agents running"; exit 0; }
 
+# Preview: bottom-anchored tail of the pane. Prepend blank lines, then keep only
+# the last $FZF_PREVIEW_LINES rows, so the most recent output hugs the bottom edge.
+preview='{ yes "" | head -n ${FZF_PREVIEW_LINES:-40}; tmux capture-pane -ep -t {1} -S -${FZF_PREVIEW_LINES:-40}; } | tail -n ${FZF_PREVIEW_LINES:-40}'
+
 sel="$(printf '%s' "$rows" | fzf --ansi \
   --delimiter=$'\t' --with-nth=2 \
   --prompt='agent ▸ ' \
   --header='enter: switch · esc: cancel' \
-  --preview='tmux capture-pane -ep -t {1} -S -40' \
-  --preview-window='right,60%,wrap')"
+  --preview="$preview" \
+  --preview-window='right,65%,wrap')"
 
 [ -z "$sel" ] && exit 0
 tmux switch-client -t "${sel%%$'\t'*}"
