@@ -1,33 +1,71 @@
 {
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-tmux-title working"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-tmux-title run"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-tmux-title notify"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-tmux-title done"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "claude-tmux-title clear"
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
     "command": "claude-statusline"
   },
-  "hooks": {
-    "UserPromptSubmit": [
-      { "hooks": [{ "type": "command", "command": "claude-tmux-title working" }] }
-    ],
-    "PostToolUse": [
-      { "matcher": "*", "hooks": [{ "type": "command", "command": "claude-tmux-title run" }] }
-    ],
-    "Notification": [
-      { "hooks": [{ "type": "command", "command": "claude-tmux-title notify" }] }
-    ],
-    "Stop": [
-      { "hooks": [{ "type": "command", "command": "claude-tmux-title done" }] }
-    ],
-    "SessionEnd": [
-      { "hooks": [{ "type": "command", "command": "claude-tmux-title clear" }] }
-    ]
+  "enabledPlugins": {
+    "vercel@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true
   },
+  "tui": "fullscreen",
   "voice": {
     "enabled": true,
     "mode": "hold"
   },
   "editorMode": "vim",
   "agentPushNotifEnabled": true,
-  "voiceEnabled": true,
-  "enabledPlugins": {
-    "vercel@claude-plugins-official": true
-  }
+  "voiceEnabled": true
 }
