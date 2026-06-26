@@ -1,6 +1,6 @@
 # Threads — vault/THREADS.md protocol
 
-This helper is referenced by `/morning`, `/checkpoint`, and `/end-of-day`. It defines the THREADS.md system: format, statuses, update rules, and apply order.
+This helper is referenced by `/next` and `/reconcile`. It defines the THREADS.md system: format, statuses, update rules, and apply order.
 
 **File location:** declared in the workspace `CONTEXT.md` under § Paths → "THREADS.md". If the user doesn't keep a THREADS.md, the commands that reference this helper should skip the thread-update sections entirely.
 
@@ -32,13 +32,13 @@ Section count headers (`## 🔥 Open (N)`, `## 💤 Dormant (N)`) must be kept a
 
 ## Status semantics
 
-- 🔥 **Open** — active in the last ~30 days OR mentioned multiple times. Surfaced in `/morning`.
-- 💤 **Dormant** — last touched >30 days ago. Not surfaced by default in `/morning`; available as fallback context.
+- 🔥 **Open** — active in the last ~30 days OR mentioned multiple times. Surfaced in `/next`.
+- 💤 **Dormant** — last touched >30 days ago. Not surfaced by default in `/next`; available as fallback context.
 - **Done = deleted**, not archived. There is no archive section. When a thread is done, its entry is removed on confirmation. (User signaled this explicitly during cleanup on 2026-05-14.)
 
 ## Promotion / demotion / deletion rules
 
-Compute on each `/checkpoint` or `/end-of-day` run. Always **propose** — never auto-apply.
+Compute on each `/reconcile` run. Always **propose** — never auto-apply.
 
 | Trigger | Action |
 |---|---|
@@ -54,16 +54,16 @@ Compute on each `/checkpoint` or `/end-of-day` run. Always **propose** — never
 
 | Command | Reads | Proposes |
 |---|---|---|
-| `/morning` | yes (read-only) | nothing — surfaces 🔥 Open in the digest |
-| `/checkpoint` | yes | **deletions only** (done threads). No new-thread or demotion proposals — defer to /end-of-day, mirroring how /checkpoint defers new tickets. |
-| `/end-of-day` | yes | additions (from today's brain dump), deletions (done), demotions (>30d), promotions (re-mentioned) |
+| `/next` | yes (read-only) | nothing — surfaces 🔥 Open in the digest |
+| `/reconcile` (mid-day) | yes | **deletions only** (done threads). No new-thread or demotion proposals — defer to eod, mirroring how mid-day defers new tickets. |
+| `/reconcile` (eod) | yes | additions (from today's brain dump), deletions (done), demotions (>30d), promotions (re-mentioned) |
 
 ## Apply order
 
 Thread edits piggyback on each command's existing propose-first cycle (see `propose-apply.md`).
 
-- `/checkpoint` apply order: Jira comments → **THREADS.md deletions** → AI block.
-- `/end-of-day` apply order: Jira comments → new Jira tickets → **THREADS.md edits** → AI block.
+- `/reconcile` (mid-day) apply order: tracker comments → **THREADS.md deletions** → AI block.
+- `/reconcile` (eod) apply order: tracker comments → new tickets → **THREADS.md edits** → AI block.
 
 After every set of changes, recompute and update the section count headers.
 
@@ -76,9 +76,9 @@ After every set of changes, recompute and update the section count headers.
 
 ## Output sections in the digest
 
-In `/morning`: a section titled `## 🧶 Open threads (opportunistic)`. List 🔥 entries as one-liners. If the top Jira pick is blocked, include 1–2 of these in "Also consider" as "if you have time" options.
+In `/next`: a section titled `## 🧶 Open threads (opportunistic)`. List 🔥 entries as one-liners. If the top pick is blocked, include 1–2 of these in "Also consider" as "if you have time" options.
 
-In `/checkpoint` and `/end-of-day`: a section titled `### 🧶 Thread updates (THREADS.md)` with sub-bullets: **Delete (done)**, **Add (new from today)**, **Demote (>30d)**, **Promote (mentioned again)**. Only show non-empty sub-bullets.
+In `/reconcile` (both modes): a section titled `### 🧶 Thread updates (THREADS.md)` with sub-bullets: **Delete (done)**, **Add (new from today)**, **Demote (>30d)**, **Promote (mentioned again)**. Only show non-empty sub-bullets.
 
 ## Related
 

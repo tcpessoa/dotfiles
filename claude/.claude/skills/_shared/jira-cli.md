@@ -1,6 +1,6 @@
 # Jira CLI — quirks, queries, and apply order
 
-This is a **Jira-specific reference**. The generic `/morning`, `/checkpoint`, and `/end-of-day` commands only consult this file when the workspace `CONTEXT.md` declares `Tracker: Jira`. If your workspace uses `gh` or no tracker, ignore this file — the generic commands handle those cases inline.
+This is a **Jira-specific reference**. The generic `/next` and `/reconcile` commands only consult this file when the workspace `CONTEXT.md` declares `Tracker: Jira`. If your workspace uses `gh` or no tracker, ignore this file — the generic commands handle those cases inline.
 
 Captures everything about the `jira` CLI (https://github.com/ankitpokhrel/jira-cli) that's non-obvious. Username and config-file path are workspace-specific; see your `CONTEXT.md` § Identity / Issue tracker. Default location for the CLI's own config is `~/.config/.jira/.config.yml`.
 
@@ -37,9 +37,9 @@ Standard columns for digest output: `--plain --columns key,type,status,priority,
 
 ## Comment voice (PM-facing)
 
-Jira comments posted by `/checkpoint` and `/end-of-day` are **read by PMs and non-engineers**, not just the user. Write accordingly:
+Jira comments posted by `/reconcile` are **read by PMs and non-engineers**, not just the user. Write accordingly:
 
-- **Prefix every progress comment with `Update:`** — not `Checkpoint:`, `EOD update:`, or anything that leaks the internal command name. Those labels are for the slash command's own bookkeeping, not for stakeholders reading the ticket.
+- **Prefix every progress comment with `Update:`** — never a label that leaks the internal command or mode name. Those labels are for the slash command's own bookkeeping, not for stakeholders reading the ticket.
 - **No commit SHAs, no branch names, no merge/squash mechanics in the body.** Lines like "merged to main via 0d7f579", "squashed commits abc1234, def5678", "branch X rebased onto Y" do not belong in a progress update. They're implementation plumbing.
 - **Lead with the business outcome**: what is now true that wasn't true before? what's the next user-visible step? what's blocking?
 - Keep it short. One short paragraph. If you find yourself writing a second paragraph, you're probably leaking implementation detail.
@@ -52,7 +52,7 @@ Good:
 > Update: backend work is merged to main. The new entity-relation model is in place, and the rename + migration script is idempotent (safe to re-run). Only step left is running the migration in production, tracked separately under <KEY>.
 
 Bad (leaks plumbing):
-> Checkpoint: feature branch `<KEY>-entity-relation-rename` merged to `main` via `0d7f579`. Squashed: `fac3aa6` (model-def), `f9e3528` (rename script), `22fca13` (lint).
+> Update: feature branch `<KEY>-entity-relation-rename` merged to `main` via `0d7f579`. Squashed: `fac3aa6` (model-def), `f9e3528` (rename script), `22fca13` (lint).
 
 ## Writing — commands and apply order
 

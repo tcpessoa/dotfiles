@@ -1,6 +1,6 @@
 # Priorities — PRIORITIES.md protocol (the Orient layer)
 
-Referenced by `/morning`, `/checkpoint`, `/end-of-day`. Defines how the routine skills use `PRIORITIES.md` to **orient** — to weight what they surface against the tracks the user has consciously chosen.
+Referenced by `/next`, `/reconcile`, and `/calibrate`. Defines how the routine skills use `PRIORITIES.md` to **orient** — to weight what they surface against the tracks the user has consciously chosen.
 
 **File location:** declared in the workspace `CONTEXT.md` under § Paths → "PRIORITIES.md". If the workspace has no PRIORITIES.md, skip everything here — the skills still run fine on commits + threads + daily notes.
 
@@ -10,7 +10,7 @@ The deliberate, top-down time budget: the tracks the user chose, their relative 
 
 > **Observe** (commits + today's notes) → **Orient** (CONTEXT + PRIORITIES + THREADS/recent daily) → **Decide** (the pick) → **Act** (the work).
 
-The skills **READ** it. They never re-weight it — re-weighting is a deliberate human act. At most, surface drift and ask.
+`/next` and `/reconcile` **READ** it — they never re-weight it; at most they surface drift and route to `/calibrate`. Re-weighting is `/calibrate`'s job (the setpoint loop), and even there it's propose-only — the human ratifies every weight change.
 
 ## What the skills read from it
 
@@ -23,8 +23,9 @@ The skills **READ** it. They never re-weight it — re-weighting is a deliberate
 This is what makes the skills *steer* rather than merely *record*.
 
 1. **Compute per-track commit counts** over a window:
-   - `/morning`: last 7 days — run `review-changes --since "$(date -v-7d +%Y-%m-%d)"` (in addition to the yesterday scan it already does).
-   - `/checkpoint`, `/end-of-day`: today's scan is enough; a weekly window is optional.
+   - `/next`: last 7 days — run `review-changes --since "$(date -v-7d +%Y-%m-%d)"` (in addition to the yesterday scan it already does).
+   - `/reconcile`: today's scan (or the catch-up span) is enough; a weekly window is optional.
+   - `/calibrate`: a longer window (~4 weeks) — this is the loop that actually re-weights against sustained drift.
 2. **Attribute** each commit's repo to a track via the repo→track map.
 3. **Compare actual activity to declared weight:**
    - A **Primary** track with ~0 activity in the window → **flag it.** This is the signal.
@@ -40,7 +41,7 @@ Insert priority-weighting into the pick logic, *below* continuity:
 - **Bridge / continuity still win** — never abandon genuine in-flight work to chase a starved track.
 - **Never pick from a Dormant track.** A dormant track is one the user deliberately stopped spending hours on; surfacing its threads as the pick fights the intention the file encodes. Its items are background context at most, never the pick (unless *nothing* active exists — then say so).
 - **When nothing in-flight forces the choice**, bias the pick toward the **highest-weight track that's starved** in the balance check. Surface that track's top `THREADS` next-action as the pick, or as the first "Also consider" — but only if that next-action passes the actionability gate (a startable task, not a wait-state).
-- In `/checkpoint` and `/end-of-day`, apply the same rule with a lighter touch: when "what's next" / the bridge is otherwise neutral, prefer the starved high-weight track.
+- In `/reconcile` (both modes), apply the same rule with a lighter touch: when "what's next" / the bridge is otherwise neutral, prefer the starved high-weight track.
 
 ## Tone
 

@@ -1,6 +1,6 @@
 # Propose-first, apply-on-go
 
-Universal rule for `/morning`, `/checkpoint`, `/end-of-day`. Do not skip this gate even if the user usually trusts you. Do not apply on first invocation.
+Universal rule for `/next`, `/reconcile`, and `/calibrate`. Do not skip this gate even if the user usually trusts you. Do not apply on first invocation.
 
 ## The contract
 
@@ -19,7 +19,7 @@ Every plan ends with:
 Reply `go` to apply everything above. Or selectively: `apply 1,3` (using the order shown), or `skip 2`, or `change 2 to <KEY>`.
 ```
 
-If there's nothing to apply (e.g., morning with no Jira writes proposed and you're only asking to write the AI block), say so plainly and ask for `go` to write just the AI block.
+If there's nothing to apply (e.g., `/next` with no tracker writes proposed and you're only asking to write the AI block), say so plainly and ask for `go` to write just the AI block.
 
 ## Apply order on "go"
 

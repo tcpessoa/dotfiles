@@ -1,6 +1,6 @@
 # Commit → ticket/issue matching protocol
 
-This helper is referenced by `/checkpoint` and `/end-of-day`. Given a list of commits and a candidate pool of open tickets/issues, produce a match decision per commit with explicit confidence.
+This helper is referenced by `/reconcile` (both modes). Given a list of commits and a candidate pool of open tickets/issues, produce a match decision per commit with explicit confidence.
 
 The protocol below is tracker-agnostic. Tracker-specific CLI invocations (Jira, gh) appear inline as branches — pick the one your workspace `CONTEXT.md` says you use.
 
@@ -35,7 +35,7 @@ In order:
 
 2. **Topic similarity vs open ticket summaries** — semantic match, not string match. Use repo context: a commit in repo X is far more likely to relate to a ticket already tagged to repo X. Read `CONTEXT.md` § Project routing if you haven't. Pick the best candidate. If confidence is low, mark it `unsure` and surface it in the "Need your decision" section rather than silently committing to it.
 
-3. **No match** — the commit goes into the **untracked work** bucket for new-ticket proposal (end-of-day only — `/checkpoint` defers untracked work to end-of-day).
+3. **No match** — the commit goes into the **untracked work** bucket for new-ticket proposal (eod only — mid-day defers untracked work to eod).
 
 ## Bias rules
 
@@ -57,9 +57,9 @@ Comment bodies don't include SHAs (see `jira-cli.md` § Comment voice — the ru
 
 If no prior comment from the user exists on the ticket → always propose (first comment).
 
-This is what makes `/checkpoint` safe to run multiple times a day: a second run within the same hour with no new commits will find the user's earlier comment is newer than every matched commit and skip.
+This is what makes `/reconcile` (mid-day) safe to run multiple times a day: a second run within the same hour with no new commits will find the user's earlier comment is newer than every matched commit and skip.
 
-## Clustering untracked work into new-ticket proposals (end-of-day only)
+## Clustering untracked work into new-ticket proposals (eod only)
 
 For commits with no matched ticket, group them by `(repo, topic)`. Each group becomes ONE proposed new ticket. Don't propose one ticket per commit — that's noise.
 
@@ -76,5 +76,5 @@ For each proposed new ticket, draft:
 Group your output into three buckets:
 
 1. **Comments to add to existing tickets** — confident matches, idempotency-filtered.
-2. **New tickets to create** — untracked work clusters (end-of-day only).
+2. **New tickets to create** — untracked work clusters (eod only).
 3. **Need your decision** — low-confidence matches with 2–3 options each (e.g., "comment on X / create new / skip").
