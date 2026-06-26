@@ -1,6 +1,6 @@
 ---
 name: next
-description: Orient-and-pick loop — reload context (commits, threads, tracker, yesterday's bridge) and hand back the next actionable thing to start. Portfolio scope in the vault. Writes today's AI block on confirmation. (Was /morning.)
+description: Orient-and-pick loop and control plane — reload context (commits, threads, tracker, yesterday's bridge), surface overdue loops from the registry, and hand back the next actionable thing to start. Portfolio scope in the vault. Writes today's AI block on confirmation.
 ---
 
 You are running the user's **orient-and-pick** loop (`/next`). The job: the cheapest path from "just sat down" to "started on the next important thing." Reload context, surface one warm next-action. Be concise — this is orientation, not an essay.
@@ -50,6 +50,14 @@ Run `review-changes -y` (script lives in the user's `PATH` — typically `~/dotf
 
 **If the workspace has a PRIORITIES.md**, also run the **7-day balance scan** per `priorities.md`: `review-changes --since "$(date -v-7d +%Y-%m-%d)"`, attribute each repo to a track via the repo→track map, and tally per-track commit counts. This feeds the ⚖️ Track balance line and the priority-weighted pick in Step 4. Keep it cheap — counts only, no per-commit detail.
 
+**Loop-health check (free — `/next` is the control plane).** `CONTEXT.md` § Loops is a registry of the user's standalone loops, each with a **watermark** (where to read "last ran") and a **cadence**. For each row, read the watermark from state you've *already loaded* and compute whether it's overdue:
+
+- `/reconcile` — newest daily before today stamped `by /reconcile (eod)`; overdue if >1 day ago → route to `/reconcile catch-up`.
+- `/calibrate` — `PRIORITIES.md` → `Last reviewed:`; overdue if older than the monthly cadence → route to `/calibrate`.
+- `/process-inbox` — the `0-Inbox/` count you already took; overdue if >0 → route to `/process-inbox`.
+
+Surface the overdue ones in the digest's `🩺 Loop health` section. **You detect and route only — never run another loop.** Honor the registry as the source of truth: if `CONTEXT.md` gains a row, check it; if it has no § Loops table, skip this section.
+
 ## Step 3 — Pull current tracker state
 
 Branch on `CONTEXT.md` § Issue tracker:
@@ -96,7 +104,7 @@ Adapt the label names to what the user's repos actually use — `CONTEXT.md` may
 
 ### If `Tracker: none`
 
-Skip Step 3 entirely. The "Active sprint" / "High priority" / "In Progress" sections drop out of the digest. You still have commits, daily notes, threads, and the Hemingway bridge — that's enough for a useful morning.
+Skip Step 3 entirely. The "Active sprint" / "High priority" / "In Progress" sections drop out of the digest. You still have commits, daily notes, threads, and the Hemingway bridge — that's enough for a useful orientation.
 
 ### Common to all trackers
 
@@ -120,6 +128,12 @@ Skip empty sections. Use ticket/issue keys as the user's tracker formats them (`
 
 ## ⚖️ Track balance (last 7d)                (skip if no PRIORITIES.md)
 <one line: per-track commit counts vs declared weight, flagging any starved Primary/leverage track — see priorities.md>
+
+## 🩺 Loop health                            (skip if every loop is current)
+_Overdue loops from `CONTEXT.md` § Loops — routes, not work. `/next` detects; you run them._
+- `/reconcile` — <N> days behind (last eod <date>); commits since aren't in tracker/THREADS → `/reconcile catch-up`
+- `/calibrate` — PRIORITIES last reviewed <date>, cadence monthly → `/calibrate`
+- `/process-inbox` — <N> items in `0-Inbox/` → `/process-inbox`
 
 ## 📥 Inbox                                  (skip if 0 or no 0-Inbox/)
 <N> unprocessed in `0-Inbox/` → run `/process-inbox` (not handled here)
@@ -181,7 +195,7 @@ Rules for picking the top pick (applied to candidates that pass the gates):
 
 **Threads in "Also consider":** when the top pick is blocked (awaiting review, dependency, external answer), include 1–2 🔥 Open threads in the "Also consider" list as opportunistic options — phrased as "if you have time, also work on X." Threads are never the top pick (they don't have a ticket); they only appear as fallback options. **A thread's `Next action` is only a valid candidate if it passes the actionability gate** — if that next action is itself a wait-state, it's a guard, not an "Also consider."
 
-For the **Standup snippet**: copy-pasteable, use ticket keys not free-form repo names. If yesterday's commits have no matching ticket, say "untracked work in `<repo>` — should I `/end-of-day` to file tickets?"
+For the **Standup snippet**: copy-pasteable, use ticket keys not free-form repo names. If yesterday's commits have no matching ticket, say "untracked work in `<repo>` — should I `/reconcile` to file tickets?"
 
 ## Step 5 — Propose today's AI block
 
