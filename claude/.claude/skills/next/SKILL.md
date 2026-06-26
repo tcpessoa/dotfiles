@@ -48,13 +48,15 @@ Run `review-changes -y` (script lives in the user's `PATH` — typically `~/dotf
 
 `review-changes` walks every repo under the code root (from `CONTEXT.md`) using each repo's local git identity, so author filtering is implicit. If `CONTEXT.md` doesn't declare a code root, ask the user where their repos live before scanning.
 
-**If the workspace has a PRIORITIES.md**, also run the **7-day balance scan** per `priorities.md`: `review-changes --since "$(date -v-7d +%Y-%m-%d)"`, attribute each repo to a track via the repo→track map, and tally per-track commit counts. This feeds the ⚖️ Track balance line and the priority-weighted pick in Step 4. Keep it cheap — counts only, no per-commit detail.
+**If the workspace has a PRIORITIES.md**, also run the **7-day balance scan** per `priorities.md`: `review-changes --since "$(date -v-7d +%Y-%m-%d)"`, attribute each repo to a track via the repo→track map, and tally per-track commit counts — **plus posting signals grepped from the in-window brain dumps** (per `priorities.md` § balance — Visibility is commit-invisible). This feeds the ⚖️ Track balance line and the priority-weighted pick in Step 4. Keep it cheap — counts only, no per-commit detail.
 
 **Loop-health check (free — `/next` is the control plane).** `CONTEXT.md` § Loops is a registry of the user's standalone loops, each with a **watermark** (where to read "last ran") and a **cadence**. For each row, read the watermark from state you've *already loaded* and compute whether it's overdue:
 
 - `/reconcile` — newest daily before today stamped `by /reconcile (eod)`; overdue if >1 day ago → route to `/reconcile catch-up`.
 - `/calibrate` — `PRIORITIES.md` → `Last reviewed:`; overdue if older than the monthly cadence → route to `/calibrate`.
 - `/process-inbox` — the `0-Inbox/` count you already took; overdue if >0 → route to `/process-inbox`.
+- `/review` — `THREADS.md` → `Last weekly review:`; overdue if >7 days ago → route to `/review`.
+- `/express` — `THREADS.md` → `Last express:`; overdue if >7 days ago → route to `/express`.
 
 Surface the overdue ones in the digest's `🩺 Loop health` section. **You detect and route only — never run another loop.** Honor the registry as the source of truth: if `CONTEXT.md` gains a row, check it; if it has no § Loops table, skip this section.
 
@@ -134,6 +136,8 @@ _Overdue loops from `CONTEXT.md` § Loops — routes, not work. `/next` detects;
 - `/reconcile` — <N> days behind (last eod <date>); commits since aren't in tracker/THREADS → `/reconcile catch-up`
 - `/calibrate` — PRIORITIES last reviewed <date>, cadence monthly → `/calibrate`
 - `/process-inbox` — <N> items in `0-Inbox/` → `/process-inbox`
+- `/review` — last weekly review <date>, >7d → `/review`
+- `/express` — last express <date>, >7d → `/express`
 
 ## 📥 Inbox                                  (skip if 0 or no 0-Inbox/)
 <N> unprocessed in `0-Inbox/` → run `/process-inbox` (not handled here)

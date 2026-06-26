@@ -39,7 +39,7 @@ Per `priorities.md`, run the **long-window** balance scan (not `/next`'s 7-day s
 review-changes --since "<Last reviewed date, or $(date -v-4w +%Y-%m-%d)>"
 ```
 
-Attribute each commit's repo to a track via the repo→track map; tally per-track counts over the window. Repos not in the map → "untracked." Keep it counts-only. **Also fold in note-work**: the vault's own track-scoped commits (`docs(<track>): …`) count toward a track's activity — visibility/writing work shows up as commits too, not just code.
+Attribute each commit's repo to a track via the repo→track map; tally per-track counts over the window. Repos not in the map → "untracked." Keep it counts-only. **Also fold in note-work**: the vault's own track-scoped commits (`docs(<track>): …`) count toward a track's activity — visibility/writing work shows up as commits too, not just code. **And fold in posting signals** (per `priorities.md` § balance): grep the in-window brain dumps for completed-posting signals (`posted` / `published` / `tweeted`) and count them toward Visibility — otherwise the leverage track reads dark even on weeks the user posted, and you'll wrongly flag it as starved.
 
 ## Step 3 — Diff: actual vs declared (the gaps to close)
 
