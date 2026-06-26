@@ -1,6 +1,6 @@
 ---
 name: reconcile
-description: Write-back loop — reflect commits to the tracker, update THREADS, draft tomorrow's bridge, refresh the AI block, commit the vault. Two modes: mid-day (light) and eod (full). (Absorbs /checkpoint + /end-of-day.)
+description: Write-back loop — reflect commits to the tracker, update THREADS, draft tomorrow's bridge, refresh the AI block, commit the vault. Two modes: mid-day (light) and eod (full); auto-catches-up across a skipped span.
 ---
 
 You are running the user's **write-back** loop (`/reconcile`): update the system's record of reality — tracker, THREADS, daily note, vault history — to match what actually happened, and close the gaps that today's work resolved. This is the reconcile half of the control loop; `/next` is the read half.
@@ -9,7 +9,7 @@ You are running the user's **write-back** loop (`/reconcile`): update the system
 
 `/reconcile` runs in one of two modes. The difference is only *how much it writes*:
 
-| | **mid-day** (was `/checkpoint`) | **eod** (was `/end-of-day`) |
+| | **mid-day** | **eod** |
 |---|---|---|
 | Tracker comments on existing tickets | yes | yes |
 | New tickets for untracked work | **no** (list as deferred) | yes |
@@ -17,13 +17,25 @@ You are running the user's **write-back** loop (`/reconcile`): update the system
 | Hemingway bridge draft | **no** | yes |
 | Vault commit | optional | yes |
 
-**Picking the mode:** if the user passed an explicit arg (`mid-day` / `eod`), use it. The `/checkpoint` and `/end-of-day` aliases pin it. Otherwise infer from local time — before ~17:00 → mid-day, later → eod — and **state which mode you chose** in the output so the user can override ("actually do eod"). When in doubt, default to mid-day (it makes fewer irreversible writes).
+**Picking the mode:** if the user passed an explicit arg (`mid-day` / `eod`), use it. Otherwise infer from local time — before ~17:00 → mid-day, later → eod — and **state which mode you chose** in the output so the user can override ("actually do eod"). When in doubt, default to mid-day (it makes fewer irreversible writes).
 
-In mid-day mode, follow the `/checkpoint` rows of the "Which command does what" tables in `_shared/threads.md`; in eod mode, the `/end-of-day` rows. The steps below are written for eod (the superset) and annotated **[eod only]** where mid-day skips them.
+In mid-day mode, follow the **mid-day** rows of the "Which command does what" tables in `_shared/threads.md`; in eod mode, the **eod** rows. The steps below are written for eod (the superset) and annotated **[eod only]** where mid-day skips them.
+
+### Catch-up — backfill a skipped span (auto, on top of eod)
+
+The loop must be **level-triggered**, not edge-triggered on "today" (adr/0003): if you skipped one or more days, a plain today-only scan loses that work — it never reaches the tracker, THREADS, or the commit-to-track balance, and they silently drift from reality.
+
+So `/reconcile` reconciles **the gap since the last full reconcile**, not just today:
+
+- **Floor = last full reconcile.** The newest daily note *before today* whose AI block is stamped `by /reconcile (eod)` marks when you last reconciled. The daily-note stamp *is* the watermark — no separate state file. Step 2 computes this and scans from there.
+- **Auto-widen.** If the floor is >1 day before today, you're in **catch-up**: announce it (`Catching up: N days since last reconcile (<floor> → today)`) and widen the scan automatically. A 0–1 day gap is a normal eod. This is the whole point — you don't have to *remember* to backfill.
+- **Override.** `catch-up` / `backfill` forces it; `catch-up=YYYY-MM-DD` pins an explicit floor. Mid-day mode never catches up (it's the light, frequent loop — keep it today-only).
+- **Catch-up only changes the *window*, not the writes.** Everything downstream (tracker, THREADS, bridge, vault commit) runs exactly as eod. Tracker idempotency (Step 3.3) makes the wider scan safe by construction — it cannot double-post. The daily-note rule below keeps it honest.
+- **No retro-writing.** Do **not** rewrite past days' AI blocks — a skipped day's note stays as the true record (often empty; you weren't there). The whole span is summarized once, in **today's** block, clearly labeled (`Shipped (catch-up <floor>→<today>)`). Backfill repairs the *shared* record (tracker + THREADS), not the diary.
 
 Goals, in order (eod; mid-day runs the subset per the table above):
 
-1. Make sure today's commits are reflected in the issue tracker (comments on existing, **[eod only]** new tickets for untracked).
+1. Make sure the window's commits (today, or the whole catch-up span) are reflected in the issue tracker (comments on existing, **[eod only]** new tickets for untracked).
 2. **[eod only]** Help the user write today's `## 🔖 Hemingway bridge` — the forward-looking note tomorrow's `/next` will read.
 3. Refresh today's daily-note AI block with full-day summary + carryover.
 4. **[eod only]** Commit the vault's day with clean, track-scoped conventional commits — so the vault's own git history becomes a usable **observe source** (note work shows up in the commit-to-track balance, not just code).
@@ -36,7 +48,7 @@ If `Tracker: none`, this command degrades to: commit summary, threads update, He
 
 ## Helpers (read these next)
 
-- `~/.claude/skills/_shared/issue-match.md` — matching protocol + **timestamp idempotency** (important — if `/checkpoint` already commented earlier, don't re-post).
+- `~/.claude/skills/_shared/issue-match.md` — matching protocol + **timestamp idempotency** (important — if an earlier mid-day run already commented, don't re-post).
 - `~/.claude/skills/_shared/daily-notes.md` — context loading + AI block write.
 - `~/.claude/skills/_shared/threads.md` — THREADS.md format and update protocol.
 - `~/.claude/skills/_shared/priorities.md` — PRIORITIES.md protocol: track weighting; tag new threads with a track. Skip if the workspace has no PRIORITIES.md.
@@ -55,11 +67,26 @@ In parallel:
   - The existing AI block (if `/next` or an earlier `/reconcile` ran today). It records what's already been done.
   - Today's `## 🗒️ Brain dump` — if the user wrote thoughts there, they're context for what really happened today.
 
-## Step 2 — Scan today's commits
+## Step 2 — Scan the reconcile window
 
-Run `review-changes` (no args). Skip merge commits. For each active repo, fetch branch via `git branch --show-current`. Fetch commit body lazily only when subject is ambiguous.
+First compute the **floor** — the last full reconcile (see "Catch-up" above). Find the newest daily note before today whose AI block was written by a full reconcile:
 
-If nothing today: skip ahead to Step 5 (Hemingway bridge reflection) — even a no-commits day deserves a closing note.
+```bash
+# newest daily file (excluding today) stamped by a full reconcile → its date is the floor
+ls "<daily-dir>"/*.md \
+  | grep -v "$(date +%Y-%m-%d).md" \
+  | sort -r \
+  | while read f; do grep -lq 'by /reconcile (eod)' "$f" && { basename "$f" .md; break; }; done
+```
+
+- **mid-day mode:** ignore the floor — always scan today only (`review-changes`, no args).
+- **eod mode:** floor → today.
+  - Floor is today or yesterday (gap ≤1 day) → normal eod: `review-changes` (no args, today only).
+  - Floor is >1 day ago → **catch-up**: `review-changes --since <floor>` (inclusive of the floor day is fine — idempotency filters the overlap). Announce the span. The `catch-up=YYYY-MM-DD` arg overrides the detected floor; bare `catch-up` with no detectable floor falls back to a 7-day window (`--since "$(date -v-7d +%Y-%m-%d)"`) — say so.
+
+Skip merge commits. For each active repo, fetch branch via `git branch --show-current`. Fetch commit body lazily only when subject is ambiguous. **In catch-up, group commits by day** so the recap shows the span honestly (`06-22: …`, `06-23: …`), not collapsed into today.
+
+If nothing in the window: skip ahead to Step 5 (Hemingway bridge reflection) — even a no-commits span deserves a closing note.
 
 ## Step 3 — Match, idempotency-filter, and cluster
 
@@ -90,7 +117,7 @@ Per `threads.md`. **Mode gate:** in **mid-day** mode propose **deletions only** 
 _Mid-day runs skip this step entirely (no bridge mid-day)._
 
 
-This is end-of-day's signature move. You're drafting the user's forward-looking note in their voice — but YOU never write it into the `## 🔖 Hemingway bridge` section directly. That section is the user's prose. Your draft goes into the AI block under "Suggested Hemingway bridge for today (paste up if you like)" — and is also shown prominently in chat so the user can copy it.
+This is the eod loop's signature move. You're drafting the user's forward-looking note in their voice — but YOU never write it into the `## 🔖 Hemingway bridge` section directly. That section is the user's prose. Your draft goes into the AI block under "Suggested Hemingway bridge for today (paste up if you like)" — and is also shown prominently in chat so the user can copy it.
 
 Source material for the draft:
 - Today's commits (what actually shipped) — concrete progress.
@@ -140,9 +167,15 @@ Plan the commits per `commit/SKILL.md` (the user's house style — conventional,
 ## Step 6 — Present the plan
 
 ```
-## 📅 End-of-day — <date>
+## 📅 Reconcile (eod) — <date>            (catch-up: "## 📅 Reconcile (catch-up) — <floor> → <date>")
 
-Scanned <N> repos, found <M> commits today. After idempotency filter: <K> new for the tracker.
+Scanned <N> repos, found <M> commits <today | across <floor>→<date>>. After idempotency filter: <K> new for the tracker.
+<catch-up only: "⏪ Catching up — N days since last reconcile (<floor>). Past days' notes left as-is; the span is summarized in today's block.">
+
+<catch-up only — per-day recap so the span is honest:>
+Shipped by day:
+- <floor>: <repo> <n> commits — <topic>
+- …: …
 
 ### 🔁 Reflection on yesterday's bridge
 Yesterday you wrote:
@@ -193,7 +226,7 @@ Why: <one-line — why this deserves its own ticket>
 
 ### 🤖 AI block update
 
-Refreshed sections: Shipped today, Tracker activity, In flight, Suggested Hemingway bridge, Carryover for tomorrow.
+Refreshed sections: Shipped today, Tracker activity, In flight, Suggested Hemingway bridge, Carryover for tomorrow. In catch-up, "Shipped today" → "Shipped (catch-up <floor>→<today>)" with the per-day breakdown; **only today's block is written — past days' notes are left untouched.**
 
 ### 📝 Proposed updates to CONTEXT.md
 (only if you spotted anything worth saving)
@@ -219,7 +252,7 @@ Per `propose-apply.md`:
    - Jira: `jira issue create -p<PROJECT> -t<TYPE> -s"<summary>" -b"<description>"` — if the project has extra required fields, let `jira issue create` prompt; tell the user "this one needs a few extra fields, answer them."
    - gh: `gh issue create -R <repo> -t "<summary>" -b "<description>" [-l <labels>] [-a @me]`
 3. Apply approved THREADS.md edits per `threads.md` (deletions, additions, demotions, promotions). Recompute section count headers.
-4. Update today's AI block per `daily-notes.md` (with the "Suggested Hemingway bridge for today" subsection populated and "Carryover for tomorrow" filled).
+4. Update **today's** AI block per `daily-notes.md` (with the "Suggested Hemingway bridge for today" subsection populated and "Carryover for tomorrow" filled). In catch-up, label the shipped section with the span and do **not** edit any prior day's file.
 5. Apply CONTEXT.md edits if approved.
 6. **Vault commit — LAST, after steps 1–5 have written to disk** (unless the user said `skip commit`). Per `commit/SKILL.md`: stage per group and make one focused, track-scoped conventional commit per concern (`git -C <vault-root> add <paths>` then `git -C <vault-root> commit -m "…"`). No co-author trailer. Do NOT push — committing only; let Obsidian sync handle the remote. Print each `✅ <type(scope): subject>`.
 7. Print confirmations.
