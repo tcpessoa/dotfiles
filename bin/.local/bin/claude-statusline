@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Claude Code status line — kanagawa-pastel palette.
 # Reads the session JSON on stdin, prints one formatted line to stdout.
-# Layout: <dir>  <branch>[ ⌥wt]  <model>  <effort>  <ctx%>[⚠]  <+add/-del>  <5h·7d limits>  <$cost>
+# Layout: <dir>  <branch>[ ⌥wt]  <model>  <effort>  <ctx%>[⚠]  <+add/-del>  <5h·7d limits>  <$cost>  <last-msg time>
 
 input="$(cat)"
 j() { printf '%s' "$input" | jq -r "$1" 2>/dev/null; }
@@ -42,6 +42,7 @@ rl5="$(j '.rate_limits.five_hour.used_percentage // empty')"
 rl5_reset="$(j '.rate_limits.five_hour.resets_at // empty')"
 rl7="$(j '.rate_limits.seven_day.used_percentage // empty')"
 cost="$(j '.cost.total_cost_usd // empty')"
+transcript="$(j '.transcript_path // empty')"
 
 # Current git branch (cheap — rev-parse only, no status scan).
 branch="$(git -C "$dir" rev-parse --abbrev-ref HEAD 2>/dev/null)"
@@ -78,5 +79,19 @@ if [ -n "$rl5" ] || [ -n "$rl7" ]; then
 fi
 
 [ -n "$cost" ] && l2+="  ${C_DIM}\$$(printf '%.2f' "$cost")${R}"
+
+# Last activity: transcript mtime = when the last message was written.
+# HH:MM for today, "Mon DD HH:MM" for older sessions (useful on resume).
+if [ -n "$transcript" ] && [ -f "$transcript" ]; then
+  last_ts="$(stat -f %m "$transcript" 2>/dev/null)"
+  if [ -n "$last_ts" ]; then
+    if [ "$(date -r "$last_ts" +%Y%m%d)" = "$(date +%Y%m%d)" ]; then
+      last_fmt="$(date -r "$last_ts" +%H:%M)"
+    else
+      last_fmt="$(date -r "$last_ts" '+%b %d %H:%M')"
+    fi
+    l2+="  ${C_DIM}󰥔 ${last_fmt}${R}"
+  fi
+fi
 
 printf '%b\n%b' "$l1" "$l2"
