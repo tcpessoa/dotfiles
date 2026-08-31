@@ -31,6 +31,11 @@ special_install_cmd() {
 node_dependent_packages=(pnpm angular-cli)
 deferred_packages=()
 
+# Everything we shell out to gets a real terminal (or nothing) on stdin — never
+# the package list, and never the already-exhausted `curl | bash` pipe this run
+# may have inherited from setup/init.
+if [ -r /dev/tty ] && [ -w /dev/tty ]; then CHILD_STDIN=/dev/tty; else CHILD_STDIN=/dev/null; fi
+
 cask_packages=(
     caffeine
     dbeaver-community
@@ -149,13 +154,17 @@ install_from_file() {
     if [ -f "$file" ]; then
         relative_path=${file#"$SCRIPT_DIR/"}
         echo "Installing packages from: $relative_path"
-        while IFS= read -r package || [[ -n "$package" ]]; do
+        # The list is read on fd 3, never on stdin. Children inherit stdin, and
+        # Homebrew's tap-trust prompt (HOMEBREW_REQUIRE_TAP_TRUST) read the whole
+        # file as its answer once — everything after the first tap formula was
+        # swallowed and silently never installed.
+        while IFS= read -r package <&3 || [[ -n "$package" ]]; do
             # Trim whitespace, then skip empty lines and comments.
             package="${package#"${package%%[![:space:]]*}"}"
             package="${package%"${package##*[![:space:]]}"}"
             [[ -z "$package" || "$package" == \#* ]] && continue
-            install_package "$package" || echo "Failed to install $package, continuing..."
-        done < "$file"
+            install_package "$package" <"$CHILD_STDIN" || echo "Failed to install $package, continuing..."
+        done 3< "$file"
         return 0
     fi
     return 1
@@ -186,7 +195,7 @@ done
 if [ ${#deferred_packages[@]} -gt 0 ]; then
     if ensure_node; then
         for package in "${deferred_packages[@]}"; do
-            install_package "$package" || echo "Failed to install $package, continuing..."
+            install_package "$package" <"$CHILD_STDIN" || echo "Failed to install $package, continuing..."
         done
     else
         warn "Skipped npm-based packages: ${deferred_packages[*]}"
