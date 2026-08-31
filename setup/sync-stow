@@ -1,5 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+
+# Root is derived, not hardcoded: the repo works from any path.
+ROOT="$(dotfiles_root)"
+command -v stow >/dev/null 2>&1 || die "stow is not installed. Run ./packages/install first."
 
 packages=(
   bin
@@ -13,30 +20,49 @@ packages=(
   zsh
 )
 
+# A stock macOS home has real files (~/.zprofile, ~/.zshrc) exactly where stow
+# wants to put symlinks, and stow refuses to clobber them. Move them aside once,
+# into a timestamped dir, so a fresh machine doesn't need manual cleanup.
+BACKUP="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
+backup_conflicts() {
+  local pkg="$1" f rel target resolved
+  [[ -d "$ROOT/$pkg" ]] || return 0
+  while IFS= read -r f; do
+    rel="${f#"$ROOT/$pkg/"}"
+    target="$HOME/$rel"
+    [[ -e "$target" && ! -L "$target" ]] || continue
+    # A previous run may have folded a whole directory into one symlink (e.g.
+    # ~/.local -> repo/bin/.local). The file then resolves THROUGH that link back
+    # into the repo, and moving it would relocate the real file out of the repo.
+    # Resolve the parent physically and skip anything already inside ROOT.
+    resolved="$(cd "$(dirname "$target")" 2>/dev/null && pwd -P)/$(basename "$target")"
+    case "$resolved" in "$ROOT"/*) continue ;; esac
+    mkdir -p "$(dirname "$BACKUP/$rel")"
+    mv "$target" "$BACKUP/$rel"
+    warn "Backed up $target -> $BACKUP/$rel"
+  done < <(find "$ROOT/$pkg" -type f)
+}
+
+for package in "${packages[@]}" claude; do
+  backup_conflicts "$package"
+done
+
 for package in "${packages[@]}"; do
-  stow -R -v -t ~ -d ~/dotfiles "$package"
+  stow -R -v -t ~ -d "$ROOT" "$package"
 done
 
-# Claude packages: --no-folding so multiple packages can co-own ~/.claude/commands/
-# (claude-work / claude-personal will be added in a follow-up; both compose into the same dir.)
-claude_packages=(claude)
-if [ "${WORK_ENV:-false}" = "true" ]; then
-  claude_packages+=(claude-work)
-else
-  claude_packages+=(claude-personal)
-fi
-
-for package in "${claude_packages[@]}"; do
-  [ -d "$HOME/dotfiles/$package" ] || continue
-  stow -R --no-folding -v -t ~ -d ~/dotfiles "$package"
-done
+# claude: --no-folding so another package could co-own ~/.claude/* dirs later.
+stow -R --no-folding -v -t ~ -d "$ROOT" claude
 
 # Special case for nvim (submodule) - direct symlink
 if [ -d ~/.config/nvim ] && [ ! -L ~/.config/nvim ]; then
-  echo "ERROR: ~/.config/nvim exists as a directory, not a symlink."
-  echo "Remove it manually before running this script:"
-  echo "  rm -rf ~/.config/nvim"
-  exit 1
+  die "~/.config/nvim exists as a directory, not a symlink.
+    Remove it manually before running this script:
+      rm -rf ~/.config/nvim"
 fi
-ln -sfn ~/dotfiles/nvim ~/.config/nvim
-echo "LINK: nvim -> ~/dotfiles/nvim"
+mkdir -p ~/.config
+ln -sfn "$ROOT/nvim" ~/.config/nvim
+say "LINK: nvim -> $ROOT/nvim"
+
+[ -d "$BACKUP" ] && say "Pre-existing files were moved to $BACKUP"
+exit 0
