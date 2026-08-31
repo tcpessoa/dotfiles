@@ -57,8 +57,15 @@ Bounded by HTML comments. Always replaced wholesale, never appended. Placement: 
 
 ### Carryover for tomorrow
 - (only `/reconcile` eod writes this)
+
+### Pick-follow
+Pick: <key-or-thread> [src: <source>] → followed | diverted (→ <where>) | dropped | (none — /next not run)
 <!-- AI:END -->
 ```
+
+The `### Pick-follow` line is the stamp defined in `loop-contract.md` § Pick-follow — written by `/reconcile` eod only, one line per day covered (a catch-up span gets one line per spanned day that had a pick, all in today's block). `/calibrate` aggregates these stamps.
+
+`[src: …]` is the rule that produced the pick (`bridge` / `continuity` / `starved-track` / `thread` / `tracker` / `guard-override`). `/next` records it on the `- Pick:` line of its own block; `/reconcile` copies it verbatim into the stamp rather than re-deriving it. Absent from `/next`'s block → `src: ?`, never a guess. This field is what lets `/calibrate` compute follow rate per *class* of pick instead of per named track.
 
 ### Which command writes which sections
 
@@ -72,6 +79,8 @@ Bounded by HTML comments. Always replaced wholesale, never appended. Placement: 
 | **What's next** | yes | yes | — |
 | **Suggested Hemingway bridge for today** | — | — | **yes** |
 | **Carryover for tomorrow** | — | — | yes |
+| **Pick-follow** (stamp per `loop-contract.md`) | — | — | yes |
+| **⏸️ Pending (headless)** | — | headless runs only | headless runs only |
 
 `/next` uses a slightly different shape since there are no commits yet:
 
@@ -81,7 +90,7 @@ Bounded by HTML comments. Always replaced wholesale, never appended. Placement: 
 *Last updated: YYYY-MM-DD HH:MM by /next*
 
 ### Today's plan
-- Pick: <KEY> — first action: `cd <repo> && git checkout <branch>`
+- Pick: <KEY> [src: <source>] — first action: `cd <repo> && git checkout <branch>`
 - Also consider: <KEY> (<topic>), <KEY> (<topic>)
 
 ### Yesterday's bridge (continuity anchor)

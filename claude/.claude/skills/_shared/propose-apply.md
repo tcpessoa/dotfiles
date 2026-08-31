@@ -1,6 +1,6 @@
 # Propose-first, apply-on-go
 
-Universal rule for `/next`, `/reconcile`, and `/calibrate`. Do not skip this gate even if the user usually trusts you. Do not apply on first invocation.
+Universal rule for `/next`, `/reconcile`, and `/calibrate` — **for Tier ≥1 action classes** (see `loop-contract.md` § Autonomy tiers and the workspace `CONTEXT.md` § Autonomy). Tier 0 classes apply automatically at their slot in the apply order and never appear as items awaiting `go`; everything else follows the contract below. Do not skip this gate even if the user usually trusts you. Undeclared action classes are Tier 1.
 
 ## The contract
 
@@ -19,7 +19,7 @@ Every plan ends with:
 Reply `go` to apply everything above. Or selectively: `apply 1,3` (using the order shown), or `skip 2`, or `change 2 to <KEY>`.
 ```
 
-If there's nothing to apply (e.g., `/next` with no tracker writes proposed and you're only asking to write the AI block), say so plainly and ask for `go` to write just the AI block.
+If there's nothing at Tier ≥1 to apply, say so plainly ("Nothing needing approval — Tier 0 writes applied.") and skip the footer; don't present an empty plan.
 
 ## Apply order on "go"
 
@@ -53,5 +53,5 @@ If everything that would be proposed is already covered, say so plainly ("Nothin
 
 - Never invent a ticket/issue key. Untracked is fine; fabricated is not.
 - Never edit an existing tracker comment in place. New comment each time.
-- Never auto-apply on the first turn, even for "obviously safe" things.
+- Never auto-apply a Tier ≥1 class on the first turn, even for "obviously safe" things — "obviously safe" is what Tier 0 is for, and getting there goes through the ratchet (`loop-contract.md`), not through judgment in the moment.
 - Never propose deleting or editing the user's hand-written daily-note sections (brain dump, Hemingway bridge). Touch only the bounded AI block.

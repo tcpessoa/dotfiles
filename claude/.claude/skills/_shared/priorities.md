@@ -27,13 +27,15 @@ This is what makes the skills *steer* rather than merely *record*.
    - `/reconcile`: today's scan (or the catch-up span) is enough; a weekly window is optional.
    - `/calibrate`: a longer window (~4 weeks) — this is the loop that actually re-weights against sustained drift.
 2. **Attribute** each commit's repo to a track via the repo→track map.
-2b. **Fold in posting signals (Visibility is commit-invisible).** A tweet or a published post usually leaves *no git commit* — only a line in the daily brain dump. `/next`, `/review`, and `/calibrate` already load the daily notes for their window, so grep those in-window brain dumps for **completed**-posting signals (`posted` / `published` / `tweeted` / `shipped a thread` — past-tense/done, **not** intents like "want to post") and count each toward **Visibility** alongside commits. Zero extra I/O — it reads state already loaded (the same membrane as the loop watermarks, `adr/0006`). Without it, Visibility reads dark even on weeks the user posted, and the balance falsely flags the leverage track as starved.
+2b. **Fold in declared signals (some tracks are commit-invisible).** Commits sense only git-visible motion — a shipped post, a sent outreach email, a user conversation, a finished read leaves *no commit*, only a line in the daily brain dump. Any track may therefore declare a **`Signals:`** list in PRIORITIES.md — past-tense/completed verbs that count as activity for that track (e.g. Visibility: `posted / published / tweeted / shipped a thread`; an outreach-flavored track: `emailed / demoed / got feedback from`). `/next`, `/review`, and `/calibrate` already load the daily notes for their window, so scan those in-window brain dumps for each track's declared signals — **completed actions only, never intents** ("want to post" doesn't count) — and count matches toward the track alongside commits. Zero extra I/O — it reads state already loaded (the same membrane as the loop watermarks, `adr/0006`). Default when a workspace declares nothing: apply the posting set above to the Visibility/leverage track, or the balance falsely flags it as starved on weeks the user posted. Caveat to keep in mind (and occasionally say out loud): this widens the sensor, it doesn't fix it — the balance still measures *motion*, not progress or quality, and a track whose real work is invisible-and-undeclared will read dark.
 3. **Compare actual activity to declared weight:**
    - A **Primary** track with ~0 activity in the window → **flag it.** This is the signal.
    - A **capped/gym** track (e.g. LC) running over its cap or eating a Primary slot → flag the inversion.
    - A **Dormant** track with activity → just note it (maybe the phase is shifting).
 4. **Output one compact line** — not a lecture. Example:
    > ⚖️ Last 7d: B 9 · A 0 · Visibility 0 · LC 2 — **Track A (primary) and Visibility (leverage) are at zero.**
+
+   (`/next` presents the same data as a small status table instead — see its SKILL.md § digest. The one-liner is the shape for `/reconcile` and `/calibrate`. The computation above is identical either way.)
 
 ## How it weights the pick
 
