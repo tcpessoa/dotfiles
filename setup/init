@@ -37,7 +37,9 @@ say "Provisioning this machine from $REPO_URL"
 # Ask for sudo once, up front, and keep it warm for the whole run.
 if interactive; then
   sudo -v </dev/tty || die "sudo is required."
-  ( while true; do sudo -n true; sleep 50; kill -0 "$$" 2>/dev/null || exit; done ) 2>/dev/null &
+  # `|| true`: this subshell inherits errexit, and one transient sudo failure
+  # would otherwise end the keepalive silently for the whole run.
+  ( while true; do sudo -n true || true; sleep 50; kill -0 "$$" 2>/dev/null || exit; done ) 2>/dev/null &
 fi
 
 # 1. Xcode Command Line Tools — this is where `git` comes from.

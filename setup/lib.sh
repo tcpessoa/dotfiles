@@ -106,7 +106,10 @@ ask_yn() {
 dotfiles_sudo_keepalive() {
   dotfiles_interactive || return 0
   sudo -v </dev/tty || die "sudo is required to provision this machine."
-  ( while true; do sudo -n true; sleep 50; kill -0 "$$" 2>/dev/null || exit; done ) 2>/dev/null &
+  # `|| true`: the subshell inherits errexit, so a single transient sudo failure
+  # would otherwise kill the keepalive for the rest of the run and the next step
+  # would prompt for a password again.
+  ( while true; do sudo -n true || true; sleep 50; kill -0 "$$" 2>/dev/null || exit; done ) 2>/dev/null &
 }
 
 # Put Homebrew on PATH for the *current* process. The Homebrew installer only
