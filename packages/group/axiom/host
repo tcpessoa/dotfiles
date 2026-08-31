@@ -1,7 +1,3 @@
-# dbeaver-community
-# ghostty
-# rectangle
-# visual-studio-code
 awscli
 caffeine
 font-hack-nerd-font
@@ -12,7 +8,7 @@ mole
 opentofu
 pass
 pinentry-mac
-stripe
+stripe/stripe-cli/stripe
 tailscale
 terraform
 typst

@@ -1,0 +1,6 @@
+# GUI applications (Homebrew casks). Opt-in: packages/install asks before
+# installing these, so a machine that already has them can skip the download.
+dbeaver-community
+ghostty
+rectangle
+visual-studio-code

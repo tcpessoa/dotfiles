@@ -5,15 +5,31 @@ set -euo pipefail
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$SCRIPT_DIR/../setup/lib.sh"
 
+# Runnable on its own, so don't assume the caller already did this.
+dotfiles_brew_shellenv || die "Homebrew is not installed. Run ./setup/bootstrap first."
+
 HOST=$(dotfiles_host)
 
-special_install_packages=(rust nvm pnpm angular-cli)
-special_install_commands=(
-    'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh'
-    'curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash'
-    'npm install -g pnpm'
-    'npm install -g @angular/cli'
-)
+# nvm installs into NVM_DIR; init.zsh reads versions from $XDG_DATA_HOME/nvm.
+# Export it so the installer and the check below agree on one location.
+export NVM_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvm"
+
+# Packages that don't come from brew. The install command lives here; the
+# matching "already installed?" probe lives in is_installed.
+special_install_cmd() {
+    case "$1" in
+        rust)        echo 'curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y' ;;
+        nvm)         echo 'mkdir -p "$NVM_DIR" && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash' ;;
+        pnpm)        echo 'npm install -g pnpm' ;;
+        angular-cli) echo 'npm install -g @angular/cli' ;;
+        *)           return 1 ;;
+    esac
+}
+
+# These install *through npm*, so they cannot run until node exists. They get
+# deferred to a second pass instead of failing on a fresh machine.
+node_dependent_packages=(pnpm angular-cli)
+deferred_packages=()
 
 cask_packages=(
     caffeine
@@ -21,6 +37,7 @@ cask_packages=(
     font-hack-nerd-font
     ghostty
     karabiner-elements
+    postman
     rectangle
     visual-studio-code
 )
@@ -30,70 +47,74 @@ cask_packages=(
 # so they self-heal even if already installed-but-unlinked.
 keg_only_force_link=(libpq)
 
-get_special_install() {
-    local package=$1
-    for i in "${!special_install_packages[@]}"; do
-        if [ "${special_install_packages[$i]}" = "$package" ]; then
-            echo "${special_install_commands[$i]}"
-            return 0
-        fi
+in_list() {
+    local needle=$1; shift
+    local item
+    for item in "$@"; do
+        [ "$item" = "$needle" ] && return 0
     done
     return 1
 }
 
 is_cask() {
-    local package=$1
-    for cask in "${cask_packages[@]}"; do
-        if [ "$cask" = "$package" ]; then
-            return 0
-        fi
-    done
-    return 1
+    in_list "$1" "${cask_packages[@]}"
 }
 
 is_installed() {
     local package=$1
-    
+
+    # Non-brew packages: probe what they actually provide.
     case $package in
-        rust)
-            command -v rustc >/dev/null 2>&1
-            return
-            ;;
-        nvm)
-            [ -d "$HOME/.nvm" ]
-            return
-            ;;
-        uv)
-            command -v uv >/dev/null 2>&1
-            return
-            ;;
-        pnpm)
-            command -v pnpm >/dev/null 2>&1
-            return
-            ;;
-        angular-cli)
-            command -v ng >/dev/null 2>&1
-            return
-            ;;
+        rust)        command -v rustc >/dev/null 2>&1; return ;;
+        nvm)         [ -s "$NVM_DIR/nvm.sh" ]; return ;;
+        pnpm)        command -v pnpm >/dev/null 2>&1; return ;;
+        angular-cli) command -v ng >/dev/null 2>&1; return ;;
     esac
-    
+
+    # brew list prints short names, so strip any tap prefix (oven-sh/bun/bun -> bun).
     if is_cask "$package"; then
-        brew list --cask 2>/dev/null | tr ' ' '\n' | grep -Fx "$package" >/dev/null
+        brew list --cask 2>/dev/null | grep -Fx "${package##*/}" >/dev/null
     else
-        brew list 2>/dev/null | tr ' ' '\n' | grep -Fx "$package" >/dev/null
+        brew list --formula 2>/dev/null | grep -Fx "${package##*/}" >/dev/null
     fi
+}
+
+# Make `npm` available in this process by sourcing nvm and installing an LTS
+# node if there isn't one yet. Only called when something actually needs npm.
+ensure_node() {
+    command -v npm >/dev/null 2>&1 && return 0
+    if [ ! -s "$NVM_DIR/nvm.sh" ]; then
+        warn "nvm is not installed — cannot install npm-based packages."
+        return 1
+    fi
+    say "Installing an LTS node so npm-based packages can be installed"
+    # nvm.sh is not -u clean.
+    set +u
+    # shellcheck disable=SC1091
+    . "$NVM_DIR/nvm.sh"
+    nvm install --lts >/dev/null
+    nvm use --lts >/dev/null
+    set -u
+    command -v npm >/dev/null 2>&1
 }
 
 install_package() {
     local package=$1
-    
+
     if is_installed "$package"; then
         echo "✓ $package is already installed"
         return
     fi
-    
+
+    # Defer npm-based packages to the second pass if npm isn't there yet.
+    if in_list "$package" "${node_dependent_packages[@]}" && ! command -v npm >/dev/null 2>&1; then
+        deferred_packages+=("$package")
+        echo "… $package deferred until node is installed"
+        return
+    fi
+
     local special_cmd
-    if special_cmd=$(get_special_install "$package"); then
+    if special_cmd=$(special_install_cmd "$package"); then
         echo "Installing $package using custom method..."
         if eval "$special_cmd"; then
             echo "✓ Successfully installed $package"
@@ -103,7 +124,7 @@ install_package() {
         fi
         return
     fi
-    
+
     if is_cask "$package"; then
         echo "Installing cask $package..."
         if brew install --cask "$package"; then
@@ -129,8 +150,10 @@ install_from_file() {
         relative_path=${file#"$SCRIPT_DIR/"}
         echo "Installing packages from: $relative_path"
         while IFS= read -r package || [[ -n "$package" ]]; do
-            # Skip empty lines and comments
-            [[ -z "$package" || "$package" =~ ^# ]] && continue
+            # Trim whitespace, then skip empty lines and comments.
+            package="${package#"${package%%[![:space:]]*}"}"
+            package="${package%"${package##*[![:space:]]}"}"
+            [[ -z "$package" || "$package" == \#* ]] && continue
             install_package "$package" || echo "Failed to install $package, continuing..."
         done < "$file"
         return 0
@@ -138,26 +161,52 @@ install_from_file() {
     return 1
 }
 
+HOST_DIR="${SCRIPT_DIR}/group/${HOST}"
 
-# Install packages base
-HOST_BASE_FILE="${SCRIPT_DIR}/group/${HOST}/base"
-if [ -f "$HOST_BASE_FILE" ]; then
-    install_from_file "$HOST_BASE_FILE"
+# A missing group used to mean "install nothing, exit 0" — a fresh machine looked
+# like a successful run. Fail loudly instead; setup/bootstrap creates the group.
+if [ ! -d "$HOST_DIR" ]; then
+    die "No package group for host '$HOST' (expected $HOST_DIR).
+    Run ./setup/bootstrap to name this machine and create its group,
+    or add packages/group/$HOST/ by hand (symlink base -> ../base, plus a host file)."
 fi
 
-# Install packages from host-specific files (if any exist)
-HOST_DIR="${SCRIPT_DIR}/group/${HOST}"
-if [ -d "$HOST_DIR" ]; then
-    for file in "$HOST_DIR"/*; do
-        if [ -f "$file" ] && [ "$(basename "$file")" != "base" ]; then
-            install_from_file "$file"
-        fi
-    done
+# Install shared base packages
+install_from_file "${HOST_DIR}/base" || true
+
+# Install host-specific packages. 'gui' is opt-in and handled separately below.
+for file in "$HOST_DIR"/*; do
+    base_name="$(basename "$file")"
+    if [ -f "$file" ] && [ "$base_name" != "base" ] && [ "$base_name" != "gui" ]; then
+        install_from_file "$file"
+    fi
+done
+
+# Second pass: npm-based packages, now that node can be installed.
+if [ ${#deferred_packages[@]} -gt 0 ]; then
+    if ensure_node; then
+        for package in "${deferred_packages[@]}"; do
+            install_package "$package" || echo "Failed to install $package, continuing..."
+        done
+    else
+        warn "Skipped npm-based packages: ${deferred_packages[*]}"
+    fi
+fi
+
+# GUI applications (casks). Asked rather than assumed: a machine that already has
+# them, or one being provisioned headless, shouldn't pull down gigabytes of apps.
+if [ -f "$HOST_DIR/gui" ]; then
+    gui_list="$(grep -v '^\s*#' "$HOST_DIR/gui" | grep -v '^\s*$' | tr '\n' ' ' | sed 's/ *$//')"
+    if dotfiles_interactive && ask_yn "Install GUI apps for $HOST ($gui_list)?" y; then
+        install_from_file "$HOST_DIR/gui"
+    else
+        say "Skipping GUI apps — run ./packages/install again to be asked."
+    fi
 fi
 
 # Force-link keg-only formulae (idempotent; safe if already linked).
 for keg in "${keg_only_force_link[@]}"; do
-    if brew list 2>/dev/null | tr ' ' '\n' | grep -Fx "$keg" >/dev/null; then
+    if brew list --formula 2>/dev/null | grep -Fx "$keg" >/dev/null; then
         echo "Force-linking keg-only formula $keg..."
         brew link --force "$keg" >/dev/null && echo "✓ Linked $keg"
     fi
