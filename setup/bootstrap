@@ -1,48 +1,126 @@
 #!/usr/bin/env bash
-# OS-agnostic bootstrap: shell, standalone zsh plugins, tmux plugin manager, submodules.
+# OS-agnostic bootstrap: OS prerequisites, host identity, machine-local env,
+# shell, standalone zsh plugins, tmux plugin manager, submodules.
 # OS-specific prerequisites (package manager, compilers, GUI defaults) live in os/<os>.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib.sh"
+ROOT="$(dotfiles_root)"
 
 OS="$(dotfiles_os)"
-echo "==> Bootstrapping for $OS"
+say "Bootstrapping for $OS"
+
+dotfiles_sudo_keepalive
 
 # 1. OS-specific prerequisites (Xcode/brew on macOS; apt/pacman later on Linux).
 OS_SCRIPT="$SCRIPT_DIR/os/$OS"
 if [[ -x "$OS_SCRIPT" ]]; then
   "$OS_SCRIPT"
 else
-  echo "No OS bootstrap script for '$OS' ($OS_SCRIPT) — skipping OS-specific setup."
+  warn "No OS bootstrap script for '$OS' ($OS_SCRIPT) — skipping OS-specific setup."
 fi
 
-# 2. Default shell -> zsh (config is framework-free, lives in ~/.config/zsh).
+# 2. Homebrew onto PATH for the rest of THIS process (the installer only prints it).
+dotfiles_brew_shellenv || true
+
+# 3. Host identity. packages/install resolves packages/group/<host> from this name;
+#    if it does not match a group dir, the install silently does nothing — so settle
+#    the name and the group here, before any package work starts.
+resolve_host() {
+  local current want group_dir existing choice src
+  current="$(dotfiles_host)"
+  want="$(ask "Hostname for this machine" "$current")"
+
+  if [[ "$want" != "$current" ]]; then
+    if [[ "$OS" == "macos" ]]; then
+      say "Setting hostname to '$want'"
+      dotfiles_set_host "$want"
+    else
+      warn "Not macOS — set the hostname to '$want' yourself; continuing with '$current'."
+      want="$current"
+    fi
+  fi
+
+  group_dir="$ROOT/packages/group/$want"
+  [[ -d "$group_dir" ]] && { say "Package group: $want"; return 0; }
+
+  warn "No package group for '$want' — packages/install would install nothing."
+  existing=""
+  for d in "$ROOT"/packages/group/*/; do
+    [[ -d "$d" ]] && existing="$existing $(basename "$d")"
+  done
+  choice="$(ask "Seed group '$want' from an existing host, or 'new' for base only?$existing" "new")"
+
+  mkdir -p "$group_dir"
+  ln -sfn ../base "$group_dir/base"
+  src="$ROOT/packages/group/$choice"
+  if [[ "$choice" != "new" && -f "$src/host" ]]; then
+    cp "$src/host" "$group_dir/host"
+    [[ -f "$src/gui" ]] && cp "$src/gui" "$group_dir/gui"
+    say "Created packages/group/$want (seeded from $choice)"
+  else
+    printf '# Host-only packages for %s. Shared ones live in packages/group/base.\n' "$want" > "$group_dir/host"
+    say "Created packages/group/$want (base only)"
+  fi
+}
+resolve_host
+
+# 4. Machine-local env. env.local is gitignored, so a fresh clone has none — and
+#    WORK_ENV has to exist before step 5 below (the work gitconfig) and before the
+#    first shell. Settle it here rather than leaving it for a later surprise.
+ENV_LOCAL="$ROOT/zsh/.config/zsh/env.local"
+ENV_EXAMPLE="$ROOT/zsh/.config/zsh/env.local.example"
+if [[ ! -f "$ENV_LOCAL" ]]; then
+  say "Creating zsh/.config/zsh/env.local"
+  cp "$ENV_EXAMPLE" "$ENV_LOCAL"
+  if ask_yn "Is this a work machine?" n; then
+    echo 'export WORK_ENV=true' >> "$ENV_LOCAL"
+  fi
+  if dotfiles_interactive && ask_yn "Open env.local now to add API keys?" y; then
+    "${EDITOR:-vi}" "$ENV_LOCAL" </dev/tty >/dev/tty 2>&1 || warn "Editor exited non-zero — edit $ENV_LOCAL later."
+  fi
+fi
+dotfiles_load_env
+
+# 5. Work gitconfig, from the template. Only meaningful on a work machine.
+if [[ "${WORK_ENV:-false}" == "true" && ! -f "$ROOT/git/.config/git/config-work" ]]; then
+  say "Creating git/.config/git/config-work from the template"
+  cp "$ROOT/git/.config/git/config-work-template" "$ROOT/git/.config/git/config-work"
+  if dotfiles_interactive && ask_yn "Open config-work now?" y; then
+    "${EDITOR:-vi}" "$ROOT/git/.config/git/config-work" </dev/tty >/dev/tty 2>&1 || true
+  fi
+fi
+
+# 6. Default shell -> zsh (config is framework-free, lives in ~/.config/zsh).
 #    Guard on `command -v zsh` so a fresh Linux box (zsh not yet installed) doesn't error;
 #    re-run after packages install zsh.
 if [[ "$SHELL" != *zsh* ]] && command -v zsh >/dev/null 2>&1; then
-  echo "==> Changing default shell to zsh"
+  say "Changing default shell to zsh"
   chsh -s "$(command -v zsh)"
 fi
 
 clone_if_missing() {
   local dest="$1" url="$2"
   [[ -d "$dest" ]] && return 0
-  echo "==> Cloning ${dest##*/}"
+  say "Cloning ${dest##*/}"
   git clone --depth=1 "$url" "$dest"
 }
 
-# 3. Standalone zsh plugins (sourced directly by ~/.config/zsh/.zshrc).
+# 7. Standalone zsh plugins (sourced directly by ~/.config/zsh/.zshrc).
 ZSH_PLUGIN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/zsh/plugins"
 mkdir -p "$ZSH_PLUGIN_DIR"
 clone_if_missing "$ZSH_PLUGIN_DIR/zsh-syntax-highlighting" https://github.com/zsh-users/zsh-syntax-highlighting.git
 clone_if_missing "$ZSH_PLUGIN_DIR/zsh-autosuggestions"     https://github.com/zsh-users/zsh-autosuggestions.git
 
-# 4. TPM (tmux plugin manager).
+# 8. TPM (tmux plugin manager).
 clone_if_missing "$HOME/.config/tmux/plugins/tpm" https://github.com/tmux-plugins/tpm
 
-# 5. Submodules (nvim).
-echo "==> Updating git submodules"
-git -C "$SCRIPT_DIR/.." submodule update --init --recursive
+# 9. Submodules (nvim), over HTTPS so this needs no SSH key. `sync` rewrites the
+#    URL in an existing clone's .git/config, so machines set up before the switch
+#    from git@ to https:// pick up the new URL instead of failing here.
+say "Updating git submodules"
+git -C "$ROOT" submodule sync --recursive >/dev/null
+git -C "$ROOT" submodule update --init --recursive
 
-echo "==> Bootstrap complete"
+say "Bootstrap complete"
