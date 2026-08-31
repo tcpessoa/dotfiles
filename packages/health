@@ -1,80 +1,56 @@
 #!/bin/bash
+# Sanity-check that the tools packages/install manages are actually on PATH.
+# Exits non-zero when anything is missing, so packages/install can report it.
 
-check_tool() {
-    local tool=$1
-    local command=$2
-    echo -n "Checking for $tool..."
-    if [[ $tool == "ripgrep" ]]; then
-        # Special case for ripgrep
-        if command -v rg > /dev/null; then
-            local version=$(rg --version | head -1)
-            echo " FOUND: $version"
-        else
-            echo " NOT FOUND"
-            missing_tools+=("$tool")
-        fi
-    elif command -v "$tool" > /dev/null; then
-        local version=$(eval "$command")
-        echo " FOUND: $version"
+# "<label>:<version command>" — the probed binary is the command's first word.
+checks=(
+    "fzf:fzf --version"
+    "jq:jq --version"
+    "ripgrep:rg --version"
+    "fd:fd --version"
+    "bat:bat --version"
+    "kubectl:kubectl version --client"
+    "docker:docker --version"
+    "delta:delta --version"
+    "eza:eza --version"
+    "node:node --version"
+    "npm:npm --version"
+    "bun:bun --version"
+    "starship:starship --version"
+)
+
+missing_tools=()
+
+for entry in "${checks[@]}"; do
+    label="${entry%%:*}"
+    cmd="${entry#*:}"
+    bin="${cmd%% *}"
+    echo -n "Checking for $label..."
+    if command -v "$bin" > /dev/null; then
+        echo " FOUND: $($cmd 2>/dev/null | head -1)"
     else
         echo " NOT FOUND"
-        missing_tools+=("$tool")
+        missing_tools+=("$label")
     fi
-}
-
-tools=(
-    "fzf"
-    "jq"
-    "ripgrep"
-    "fd"
-    "bat"
-    "kubectl"
-    "docker"
-    "delta"
-    "eza"
-    "node"
-    "npm"
-    "bun"
-    "starship"
-    "pyenv"
-)
-
-commands=(
-    "fzf --version"
-    "jq --version"
-    "rg --version"
-    "fd --version"
-    "bat --version"
-    "kubectl version --client"
-    "docker --version"
-    "delta --version"
-    "eza --version"
-    "node --version"
-    "npm --version"
-    "bun --version"
-    "starship --version"
-    "pyenv --version"
-)
+done
 
 echo -n "Checking for nvm..."
-if [[ -s "$HOME/.nvm/nvm.sh" ]]; then
-    source "$HOME/.nvm/nvm.sh"
-    nvm --version && echo " FOUND: $(nvm --version)" || echo " NOT FOUND"
+# nvm lives in NVM_DIR, which init.zsh and packages/install both set to
+# $XDG_DATA_HOME/nvm — not the installer's ~/.nvm default.
+NVM_DIR="${NVM_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/nvm}"
+if [[ -s "$NVM_DIR/nvm.sh" ]]; then
+    source "$NVM_DIR/nvm.sh"
+    echo " FOUND: $(nvm --version)"
 else
     echo " NOT FOUND"
     missing_tools+=("nvm")
 fi
-
-missing_tools=()
-for i in "${!tools[@]}"; do
-    check_tool "${tools[$i]}" "${commands[$i]}"
-done
 
 echo -e "\n---> Check for [kubectx] manually, it doesn't have a version command"
 
 if [ ${#missing_tools[@]} -gt 0 ]; then
     echo "The following tools are missing: ${missing_tools[*]}"
     echo "Please install them to ensure proper functionality."
-else
-    echo "All tools are installed and ready."
+    exit 1
 fi
+echo "All tools are installed and ready."
