@@ -142,7 +142,9 @@ install_package() {
 
     if is_cask "$package"; then
         echo "Installing cask $package..."
-        if brew install --cask "$package"; then
+        # --adopt takes over an app that is already in /Applications (a manual
+        # download, or a previous non-brew install) instead of erroring out.
+        if brew install --cask --adopt "$package"; then
             echo "✓ Successfully installed cask $package"
         else
             echo "❌ Failed to install cask $package"
