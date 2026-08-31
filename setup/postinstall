@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# Everything that can only happen once packages are installed and configs are
+# stowed: GitHub auth, the optional HTTPS->SSH upgrade, and plugin managers that
+# need their own config files to already be in place.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/lib.sh"
+ROOT="$(dotfiles_root)"
+
+dotfiles_brew_shellenv || true
+
+# 1. GitHub CLI auth. Browser-based, so it replaces the old "generate a key and
+#    paste it into github.com before you can even clone" prerequisite.
+if command -v gh >/dev/null 2>&1; then
+  if gh auth status >/dev/null 2>&1; then
+    say "gh is already authenticated"
+  elif dotfiles_interactive && ask_yn "Sign in to GitHub with gh (opens a browser)?" y; then
+    # No `gh auth setup-git` here: it would write credential.helper through the
+    # stowed ~/.config/git symlink into the repo's TRACKED git config. The gh
+    # credential helper is committed in git/.config/git/config instead.
+    gh auth login </dev/tty >/dev/tty 2>&1 || warn "gh auth login did not complete."
+  fi
+else
+  warn "gh not installed — skipping GitHub auth."
+fi
+
+# 2. Upgrade origin from HTTPS to SSH. Optional, and deliberately last: the clone
+#    already worked over HTTPS, so nothing is blocked if this is declined.
+github_ssh_works() {
+  local out
+  out="$(ssh -o StrictHostKeyChecking=accept-new -o BatchMode=yes -o ConnectTimeout=5 \
+         -T git@github.com 2>&1 || true)"
+  case "$out" in *"successfully authenticated"*) return 0 ;; esac
+  return 1
+}
+
+upgrade_remote_to_ssh() {
+  local url owner_repo
+  url="$(git -C "$ROOT" remote get-url origin)"
+  case "$url" in
+    https://github.com/*)
+      owner_repo="${url#https://github.com/}"
+      git -C "$ROOT" remote set-url origin "git@github.com:${owner_repo}"
+      say "origin -> git@github.com:${owner_repo}"
+      ;;
+    *) say "origin is already $url — leaving it alone" ;;
+  esac
+}
+
+if github_ssh_works; then
+  upgrade_remote_to_ssh
+elif command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1 \
+     && dotfiles_interactive \
+     && ask_yn "Create an SSH key and add it to GitHub (upgrades origin to SSH)?" y; then
+  KEY="$HOME/.ssh/id_ed25519"
+  if [[ ! -f "$KEY" ]]; then
+    mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
+    ssh-keygen -t ed25519 -C "$(git config --get user.email || echo "$USER@$(dotfiles_host)")" \
+               -f "$KEY" -N "" </dev/tty >/dev/tty 2>&1
+  fi
+  if gh ssh-key add "$KEY.pub" --title "$(dotfiles_host)" </dev/tty >/dev/tty 2>&1; then
+    github_ssh_works && upgrade_remote_to_ssh || warn "Key added, but SSH auth didn't verify yet."
+  else
+    warn "Could not add the SSH key (it may already be registered)."
+  fi
+fi
+
+# 3. tmux plugins — TPM was cloned in bootstrap, but it can only install plugins
+#    once ~/.config/tmux/tmux.conf is stowed. Saves you the manual `prefix + I`.
+TPM_INSTALL="$HOME/.config/tmux/plugins/tpm/bin/install_plugins"
+if [[ -x "$TPM_INSTALL" ]] && command -v tmux >/dev/null 2>&1; then
+  say "Installing tmux plugins"
+  "$TPM_INSTALL" >/dev/null 2>&1 || warn "TPM install failed — run 'prefix + I' inside tmux."
+fi
+
+# 4. Neovim plugins, headless, so the first real launch isn't a progress bar.
+if command -v nvim >/dev/null 2>&1 && [[ -e "$HOME/.config/nvim" ]]; then
+  say "Syncing Neovim plugins (headless)"
+  nvim --headless "+Lazy! sync" +qa >/dev/null 2>&1 || warn "Lazy sync failed — open nvim and run :Lazy sync."
+fi
+
+say "Post-install complete"

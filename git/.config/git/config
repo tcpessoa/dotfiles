@@ -34,3 +34,15 @@
 
 [url "git@github.com:tcpessoa/"]
     insteadOf = mygh:
+
+# gh as the credential helper for HTTPS github remotes. Committed here (rather
+# than written by `gh auth setup-git` in postinstall) because ~/.config/git/config
+# is a stowed symlink into this repo — a `git config --global` write would dirty
+# the tracked file. The blank helper resets any system-level helpers first.
+[credential "https://github.com"]
+    helper =
+    helper = !gh auth git-credential
+
+[credential "https://gist.github.com"]
+    helper =
+    helper = !gh auth git-credential
