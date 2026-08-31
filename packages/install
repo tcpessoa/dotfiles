@@ -50,6 +50,7 @@ cask_packages=(
     font-hack-nerd-font
     ghostty
     karabiner-elements
+    mitmproxy
     postman
     rectangle
     visual-studio-code
@@ -85,11 +86,12 @@ is_installed() {
     esac
 
     # brew list prints short names, so strip any tap prefix (oven-sh/bun/bun -> bun).
-    if is_cask "$package"; then
-        brew list --cask 2>/dev/null | grep -Fx "${package##*/}" >/dev/null
-    else
-        brew list --formula 2>/dev/null | grep -Fx "${package##*/}" >/dev/null
-    fi
+    # Both lists are checked rather than trusting cask_packages: a cask missing
+    # from that array installs fine but would look uninstalled forever, so every
+    # run would reinstall it.
+    local short="${package##*/}"
+    brew list --formula 2>/dev/null | grep -Fx "$short" >/dev/null && return 0
+    brew list --cask    2>/dev/null | grep -Fx "$short" >/dev/null
 }
 
 # Make `npm` available in this process by sourcing nvm and installing an LTS
