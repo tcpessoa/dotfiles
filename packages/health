@@ -17,6 +17,9 @@ checks=(
     "npm:npm --version"
     "bun:bun --version"
     "starship:starship --version"
+    # stow is what setup/sync-stow hard-depends on — missing it fails the *next*
+    # step of ./install, so name it here rather than one stage later.
+    "stow:stow --version"
 )
 
 missing_tools=()
