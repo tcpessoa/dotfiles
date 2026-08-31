@@ -6,6 +6,8 @@ echo "==> macOS prerequisites"
 
 # Xcode Command Line Tools
 if ! xcode-select -p &>/dev/null; then
+    # GUI dialog — headless runs would wait forever below.
+    [ -r /dev/tty ] || { echo "Xcode CLT missing and no TTY to wait on — run 'xcode-select --install' first." >&2; exit 1; }
     echo "Installing Xcode Command Line Tools..."
     xcode-select --install
     echo "Waiting for Xcode Command Line Tools installation..."
@@ -18,7 +20,7 @@ fi
 # Homebrew
 if ! command -v brew &>/dev/null; then
     echo "Installing Homebrew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
 configure_finder() {
