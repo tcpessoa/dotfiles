@@ -2,7 +2,7 @@
     name = Tiago Pessoa
     email = 70546713+tcpessoa@users.noreply.github.com
 
-[includeIf "gitdir/i:~/Documents/repos_work/"]
+[includeIf "gitdir/i:~/work/"]
   path = ~/.config/git/config-work
 
 [init]

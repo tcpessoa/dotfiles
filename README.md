@@ -125,7 +125,7 @@ and opens it. To do it by hand, see the [template](./git/.config/git/config-work
 cp ./git/.config/git/config-work-template ./git/.config/git/config-work
 ```
 
-- This configuration assumes that the work repos will be in `~/Documents/repos_work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
+- This configuration assumes that the work repos will be in `~/work/` and the personal ones in `~/code/`. This will then play nicely with the `zsh` functions to find work and personal repos defined in the [functions](./zsh/.config/zsh/functions.zsh) file.
 
 # Neovim
 

@@ -115,7 +115,7 @@ current_dir=$(pwd)
 for dir in \
     "$HOME/dotfiles" \
     "$HOME/.config/nvim" \
-    "$HOME/Documents/repos_work/"*/ \
+    "$HOME/work/"*/ \
     "$HOME/code/"*/; do
     if [[ -d "$dir" ]] && is_git_repo "$dir"; then
         review_repo "$dir"
@@ -125,7 +125,7 @@ done
 # Also check current directory if it's a git repo and not already covered
 if [[ "$current_dir" != "$HOME/dotfiles" ]] && \
    [[ "$current_dir" != "$HOME/.config/nvim" ]] && \
-   [[ ! "$current_dir" =~ ^$HOME/Documents/repos_work/ ]] && \
+   [[ ! "$current_dir" =~ ^$HOME/work/ ]] && \
    [[ ! "$current_dir" =~ ^$HOME/code/ ]] && \
    is_git_repo "$current_dir"; then
     review_repo "$current_dir"

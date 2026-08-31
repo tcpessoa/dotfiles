@@ -26,7 +26,7 @@ eza --color=always --long --icons=always --no-user --no-permissions --sort modif
 alias ht="fc -rlt '%Y-%m-%d %H:%M:%S' 1"
 
 ### COMMNON DIRECTORIES
-alias proj="cd ~/Documents/repos_work"
+alias proj="cd ~/work"
 alias pproj="cd ~/code"
 
 ### PYTHON venvs 

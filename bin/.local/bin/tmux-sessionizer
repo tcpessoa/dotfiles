@@ -7,7 +7,7 @@ read -r -d '' CONFIG << EOF
 {
   "repos": [
     {
-      "path": "$HOME/Documents/repos_work",
+      "path": "$HOME/work",
       "depth": 1
     },
     {
