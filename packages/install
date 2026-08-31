@@ -36,6 +36,14 @@ deferred_packages=()
 # may have inherited from setup/init.
 if [ -r /dev/tty ] && [ -w /dev/tty ]; then CHILD_STDIN=/dev/tty; else CHILD_STDIN=/dev/null; fi
 
+# Failures are non-fatal (a flaky ghcr.io shouldn't abort a 40-package run), but
+# they must not scroll past unnoticed either — they get replayed at the end.
+failed_packages=()
+record_failure() {
+    failed_packages+=("$1")
+    echo "Failed to install $1, continuing..."
+}
+
 cask_packages=(
     caffeine
     dbeaver-community
@@ -163,7 +171,7 @@ install_from_file() {
             package="${package#"${package%%[![:space:]]*}"}"
             package="${package%"${package##*[![:space:]]}"}"
             [[ -z "$package" || "$package" == \#* ]] && continue
-            install_package "$package" <"$CHILD_STDIN" || echo "Failed to install $package, continuing..."
+            install_package "$package" <"$CHILD_STDIN" || record_failure "$package"
         done 3< "$file"
         return 0
     fi
@@ -195,7 +203,7 @@ done
 if [ ${#deferred_packages[@]} -gt 0 ]; then
     if ensure_node; then
         for package in "${deferred_packages[@]}"; do
-            install_package "$package" <"$CHILD_STDIN" || echo "Failed to install $package, continuing..."
+            install_package "$package" <"$CHILD_STDIN" || record_failure "$package"
         done
     else
         warn "Skipped npm-based packages: ${deferred_packages[*]}"
@@ -230,6 +238,12 @@ if [ -f "${SCRIPT_DIR}/health" ]; then
     fi
 else
     echo "Health check script not found, skipping..."
+fi
+
+if [ ${#failed_packages[@]} -gt 0 ]; then
+    echo
+    warn "Failed to install: ${failed_packages[*]}"
+    warn "Re-run ./packages/install to retry — transient ghcr.io/network errors are common."
 fi
 
 echo "Package installation complete!"
