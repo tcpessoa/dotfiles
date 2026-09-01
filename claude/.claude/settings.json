@@ -1,4 +1,7 @@
 {
+  "permissions": {
+    "defaultMode": "auto"
+  },
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -52,9 +55,6 @@
       }
     ]
   },
-  "permissions": {
-    "defaultMode": "auto"
-  },
   "statusLine": {
     "type": "command",
     "command": "claude-statusline"
@@ -68,6 +68,7 @@
     "enabled": true,
     "mode": "hold"
   },
+  "theme": "dark",
   "editorMode": "vim",
   "agentPushNotifEnabled": true,
   "voiceEnabled": true
