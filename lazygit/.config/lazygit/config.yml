@@ -22,7 +22,6 @@ gui:
       - '#DCD7BA' # fujiWhite
     searchingActiveBorderColor:
       - '#DCA561' # carpYellow
-
   # Catppuccin Mocha theme
   # theme:
   #   activeBorderColor:
@@ -73,8 +72,8 @@ gui:
     'Tiago Pessoa': '#FF9E3B' # orange
 git:
   # See https://github.com/jesseduffield/lazygit/blob/master/docs/Custom_Pagers.md
-  pagers:
-    - pager: "delta --dark --paging=never"
+  diffRenderers:
+    - command: "delta --dark --paging=never"
 # See https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md#custom-pull-request-urls
 services:
   'gitlab.g42.ae': 'gitlab:gitlab.g42.ae'
