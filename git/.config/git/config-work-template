@@ -1,3 +1,7 @@
+# Template for ~/.config/git/config-work (gitignored, machine-specific).
+# Copy this to config-work and fill in your work details; it's included via
+# includeIf "gitdir/i:~/work/" in config, so it only applies to repos under
+# ~/work/ and the `work:` clone shorthand only resolves from there too.
 [user]
     email = your.name@company.com
 
