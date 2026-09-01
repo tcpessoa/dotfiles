@@ -1,24 +1,15 @@
 #!/bin/bash
 
-WORK_VAULT_DIR="$HOME/code/work-vault"
-PERSONAL_VAULT_DIR_WORK="$HOME/code/my-vault"
-PERSONAL_VAULT_DIR_HOME="$HOME/code/my-vault"
+WORK_VAULT_DIR="$HOME/work/work-vault"
+PERSONAL_VAULT_DIR="$HOME/code/my-vault"
 
 TARGET_ZET_DIR="0-Inbox"
 
 get_vault_path() {
-    local hostname=$(hostname)
-
-    # Work machine
-    if [[ "$hostname" == *"LT4062442416"* ]]; then
-        if [ "$1" = "-p" ] || [ "$1" = "--personal" ]; then
-            echo "$PERSONAL_VAULT_DIR_WORK/$TARGET_ZET_DIR"
-        else
-            echo "$WORK_VAULT_DIR/$TARGET_ZET_DIR"
-        fi
-    # Personal machine
+    if [ "$1" != "-p" ] && [ "$1" != "--personal" ] && [ "$WORK_ENV" = "true" ]; then
+        echo "$WORK_VAULT_DIR/$TARGET_ZET_DIR"
     else
-        echo "$PERSONAL_VAULT_DIR_HOME/$TARGET_ZET_DIR"
+        echo "$PERSONAL_VAULT_DIR/$TARGET_ZET_DIR"
     fi
 }
 
