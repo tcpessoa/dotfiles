@@ -1,6 +1,6 @@
 # zmodload zsh/zprof
 source $HOME/.config/zsh/init.zsh
-if [[ "$WORK_ENV" == "true" ]]; then
+if [[ "$WORK_ENV" == "true" && -f "$HOME/.config/zsh/.zshrc_work" ]]; then
     source $HOME/.config/zsh/.zshrc_work
 fi
 
