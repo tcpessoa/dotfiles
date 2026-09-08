@@ -2,7 +2,7 @@
 
 This helper is referenced by `/reconcile` (both modes). Given a list of commits and a candidate pool of open tickets/issues, produce a match decision per commit with explicit confidence.
 
-The protocol below is tracker-agnostic. Tracker-specific CLI invocations (Jira, gh) appear inline as branches — pick the one your workspace `CONTEXT.md` says you use.
+The protocol below is tracker-agnostic. Tracker-specific CLI invocations (Jira, gh, glab) appear inline as branches — pick the one your workspace `CONTEXT.md` says you use.
 
 ## Inputs you need before matching
 
@@ -24,6 +24,13 @@ The candidate pool: open tickets you can match against. Pull once:
   # plus, if relevant, issues you opened that others own:
   gh search issues --author=@me --state=open --json repository,number,title,assignees
   ```
+- **glab** (GitLab — no global issue search, so go through the API; these return issues across ALL your projects):
+  ```bash
+  glab api "issues?scope=assigned_to_me&state=opened&per_page=100" --paginate
+  # plus, if relevant, issues you opened that others own:
+  glab api "issues?scope=created_by_me&state=opened&per_page=100" --paginate
+  ```
+  Each item carries `references.full` (`group/project#N`), `title`, `web_url`, `labels`. Per-repo fallback: `glab issue list --assignee=@me` run inside the repo.
 
 (Sprint / milestone membership doesn't matter for matching — a commit might relate to any open ticket of yours.)
 
@@ -31,7 +38,7 @@ The candidate pool: open tickets you can match against. Pull once:
 
 In order:
 
-1. **Explicit key in branch name, commit subject, or body** — for Jira, regex `[A-Z]{2,}-\d+`. For gh, look for `#\d+` (same-repo) or `<owner>/<repo>#\d+` (cross-repo). If found and the key exists in the open pool (or just looks valid), use it. **High confidence.**
+1. **Explicit key in branch name, commit subject, or body** — for Jira, regex `[A-Z]{2,}-\d+`. For gh/glab, look for `#\d+` (same-repo) or `<owner>/<repo>#\d+` / `<group>/<project>#\d+` (cross-repo). If found and the key exists in the open pool (or just looks valid), use it. **High confidence.**
 
 2. **Topic similarity vs open ticket summaries** — semantic match, not string match. Use repo context: a commit in repo X is far more likely to relate to a ticket already tagged to repo X. Read `CONTEXT.md` § Project routing if you haven't. Pick the best candidate. If confidence is low, mark it `unsure` and surface it in the "Need your decision" section rather than silently committing to it.
 
@@ -51,6 +58,7 @@ Comment bodies don't include SHAs (see `jira-cli.md` § Comment voice — the ru
 1. Fetch the ticket's recent comments:
    - Jira: `jira issue view <KEY> --plain --comments 20`
    - gh: `gh issue view <N> -R <repo> --comments`
+   - glab: `glab issue view <N> -R <group/project> --comments` (or run inside the repo without `-R`)
 2. Find the **timestamp of the most recent comment authored by the current user** on this ticket.
 3. Find the **timestamp of the latest commit** in the candidate group matched to this ticket: `git -C <repo-path> show -s --format=%ci <hash>`.
 4. **If the latest commit is older than (or equal to) the user's latest comment on the ticket → skip the proposal** — the comment already covers everything up to that point. If newer → propose a new `Update:` comment summarizing the progress topically (no SHAs in the body).
@@ -67,7 +75,8 @@ For each proposed new ticket, draft:
 - **Where it lands**:
   - Jira: infer the project from the repo via `CONTEXT.md` § Project routing. If ambiguous, say `Project: ??? (need user input)`.
   - gh: the repo itself is where the issue lives. `CONTEXT.md` may declare a default repo for cross-cutting work.
-- **Type / labels**: `Task` by default (Jira) or no special label (gh); `Bug` (Jira) / `bug` label (gh) if commits look like fixes (subject starts with `fix:` or contains "fix", "bug", "revert").
+  - glab: same as gh — the repo itself (`glab issue create -R <group/project>`); `CONTEXT.md` may declare a default project for cross-cutting work.
+- **Type / labels**: `Task` by default (Jira) or no special label (gh / glab); `Bug` (Jira) / `bug` label (gh / glab) if commits look like fixes (subject starts with `fix:` or contains "fix", "bug", "revert").
 - **Summary**: short one-line title derived from the commit subjects.
 - **Description**: PM-facing — what the work accomplished and why, in business terms. **No commit SHAs or branch names in the description body** (per `jira-cli.md` § Comment voice). After the ticket is created, you can back-fill a separate internal comment with repo/branch/SHA/MR for ticket↔code traceability (per `CONTEXT.md` § Conventions, if the user has set that convention).
 
