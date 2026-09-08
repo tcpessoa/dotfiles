@@ -3,6 +3,7 @@ alias brewup="brew update; brew upgrade; brew cleanup; brew doctor"
 alias szsh="source ~/.config/zsh/.zshrc"
 alias v='nvim'
 alias c='claude'
+alias cw='CLAUDE_CONFIG_DIR=~/.claude-work claude'
 alias oc='opencode'
 
 ## GIT
