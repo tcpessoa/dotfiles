@@ -1,6 +1,9 @@
 .DS_Store
 tmux/.config/tmux/plugins/*
 
+# claude CLI launcher — rewritten by claude's auto-updater, must not be committed
+bin/.local/bin/claude
+
 # zsh
 zsh/.config/zsh/.zcompdump*
 zsh/.config/zsh/.zsh_sessions/*
