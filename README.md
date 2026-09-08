@@ -103,6 +103,12 @@ On a work machine, `setup/bootstrap` creates `config-work` from the
 `~/work/`, personal ones in `~/code/` — the git config and the zsh repo
 functions in [functions.zsh](./zsh/.config/zsh/functions.zsh) assume this.
 
+# Claude
+
+The work profile (`~/.claude-work`) isn't set up by this repo — create it
+manually. To reuse skills, symlink them:
+`ln -s ~/dotfiles/claude/.claude/skills ~/.claude-work/skills`.
+
 # Neovim
 
 A submodule of my [kickstart.nvim fork](https://github.com/tcpessoa/kickstart.nvim),
