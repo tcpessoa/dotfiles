@@ -14,3 +14,5 @@ zsh/.config/zsh/env.local
 # git
 git/.config/git/config-work
 
+# claude auto sync
+claude/.claude/skills/synced
