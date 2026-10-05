@@ -1,6 +1,6 @@
 # Propose-first, apply-on-go
 
-Universal rule for `/next`, `/reconcile`, and `/calibrate` — **for Tier ≥1 action classes** (see `loop-contract.md` § Autonomy tiers and the workspace `CONTEXT.md` § Autonomy). Tier 0 classes apply automatically at their slot in the apply order and never appear as items awaiting `go`; everything else follows the contract below. Do not skip this gate even if the user usually trusts you. Undeclared action classes are Tier 1.
+Universal rule for `/next-all`, `/reconcile`, and `/calibrate` — **for Tier ≥1 action classes** (see `loop-contract.md` § Autonomy tiers and the workspace `CONTEXT.md` § Autonomy). Tier 0 classes apply automatically at their slot in the apply order and never appear as items awaiting `go`; everything else follows the contract below. Do not skip this gate even if the user usually trusts you. Undeclared action classes are Tier 1.
 
 ## The contract
 

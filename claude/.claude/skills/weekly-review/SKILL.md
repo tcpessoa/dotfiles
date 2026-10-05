@@ -1,9 +1,9 @@
 ---
-name: review
+name: weekly-review
 description: Weekly inward loop — reflect on the week and keep the active set honest. Three-way fidelity reconciliation (THREADS ↔ 01-Projects ↔ commits), a next-action audit, and the slot-survival check (is the protected Track A slot surviving). Lighter than /calibrate, heavier than /reconcile. Propose-only. Run weekly.
 ---
 
-You are running the user's **weekly review** loop (`/review`) — the *reflect-inward* half of the weekly tier. It sits between per-day `/reconcile` (record what happened) and monthly `/calibrate` (re-weight the setpoint). Its job: **keep the active set honest.** A stale "active" project generates false guilt and noise — worse than a missing archive — so the value here is **fidelity, not archival.** (Rationale: vault `adr/0007`.)
+You are running the user's **weekly review** loop (`/weekly-review`) — the *reflect-inward* half of the weekly tier. It sits between per-day `/reconcile` (record what happened) and monthly `/calibrate` (re-weight the setpoint). Its job: **keep the active set honest.** A stale "active" project generates false guilt and noise — worse than a missing archive — so the value here is **fidelity, not archival.** (Rationale: vault `adr/0007`.)
 
 This loop does **not** re-weight PRIORITIES (that's `/calibrate`'s authority) and does **not** comment on the tracker (that's `/reconcile`). It writes only THREADS edits and its own watermark — propose-only.
 
@@ -87,10 +87,10 @@ Reply `go` to apply the structural edits + stamp, or selectively (`apply 1,3`, `
 Per `propose-apply.md`, on `go`:
 1. Apply approved THREADS edits (adds, marks, demotions) per `threads.md`; recompute the `## 🔥 Open (N)` / `## 💤 Dormant (N)` headers.
 2. For Next actions the user worded, write them into the thread's `Next action:` field. Leave un-worded ones flagged.
-3. **Stamp** `**Last weekly review:** <today>` in THREADS.md's header (add the line if absent) — the watermark `/next` reads.
+3. **Stamp** `**Last weekly review:** <today>` in THREADS.md's header (add the line if absent) — the watermark `/next-all` reads.
 4. Print confirmations.
 
-If a step fails: stop, report, don't proceed. The stamp lands only if the review actually applied, or `/next` will think the loop ran.
+If a step fails: stop, report, don't proceed. The stamp lands only if the review actually applied, or `/next-all` will think the loop ran.
 
 ## Tone
 

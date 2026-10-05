@@ -1,6 +1,6 @@
 # Daily notes — read context, write AI block
 
-This helper is referenced by `/next` and `/reconcile`. Daily notes live in the directory declared in the workspace `CONTEXT.md` under § Paths → "Daily notes." Read `CONTEXT.md` first if you don't have that path in mind.
+This helper is referenced by `/next-all` and `/reconcile`. Daily notes live in the directory declared in the workspace `CONTEXT.md` under § Paths → "Daily notes." Read `CONTEXT.md` first if you don't have that path in mind.
 
 Files are named `YYYY-MM-DD.md`. Each file has user-written sections (typically `## 🗒️ Brain dump`, `## 🔖 Hemingway bridge`) and may include Obsidian dataview blocks at the bottom. The AI-generated block lives between them. If the workspace uses different section names, `CONTEXT.md` should call that out — adapt the headings accordingly.
 
@@ -26,10 +26,10 @@ If you find fewer than 7 entries (e.g., long gap), use what you have.
 Read today's file at `<daily-notes-dir>/$(date +%Y-%m-%d).md` separately. If it doesn't exist yet, that's fine — create it on the write step. Specifically check:
 
 - `## 🗒️ Brain dump` — user's free-form notes from today.
-- `## 🔖 Hemingway bridge` — user's forward-looking note from end of YESTERDAY (if a previous eod reconcile ran). This is the continuity anchor for `/next`.
+- `## 🔖 Hemingway bridge` — user's forward-looking note from end of YESTERDAY (if a previous eod reconcile ran). This is the continuity anchor for `/next-all`.
 - Existing AI block (between `<!-- AI:START -->` and `<!-- AI:END -->`) — if a prior command ran today, its output is here. Read it so you don't repeat / contradict.
 
-For `/next`: the Hemingway bridge you care about is in **yesterday's file** (or the most recent prior weekday). Today's file's bridge is what `/reconcile` (eod) will write later, for tomorrow's `/next` to read. Direction: reconcile writes today's bridge → the next `/next` reads it.
+For `/next-all`: the Hemingway bridge you care about is in **yesterday's file** (or the most recent prior weekday). Today's file's bridge is what `/reconcile` (eod) will write later, for tomorrow's `/next-all` to read. Direction: reconcile writes today's bridge → the next `/next-all` reads it.
 
 ## AI block format
 
@@ -59,17 +59,17 @@ Bounded by HTML comments. Always replaced wholesale, never appended. Placement: 
 - (only `/reconcile` eod writes this)
 
 ### Pick-follow
-Pick: <key-or-thread> [src: <source>] → followed | diverted (→ <where>) | dropped | (none — /next not run)
+Pick: <key-or-thread> [src: <source>] → followed | diverted (→ <where>) | dropped | (none — /next-all not run)
 <!-- AI:END -->
 ```
 
 The `### Pick-follow` line is the stamp defined in `loop-contract.md` § Pick-follow — written by `/reconcile` eod only, one line per day covered (a catch-up span gets one line per spanned day that had a pick, all in today's block). `/calibrate` aggregates these stamps.
 
-`[src: …]` is the rule that produced the pick (`bridge` / `continuity` / `starved-track` / `thread` / `tracker` / `guard-override`). `/next` records it on the `- Pick:` line of its own block; `/reconcile` copies it verbatim into the stamp rather than re-deriving it. Absent from `/next`'s block → `src: ?`, never a guess. This field is what lets `/calibrate` compute follow rate per *class* of pick instead of per named track.
+`[src: …]` is the rule that produced the pick (`bridge` / `continuity` / `starved-track` / `thread` / `tracker` / `guard-override`). `/next-all` records it on the `- Pick:` line of its own block; `/reconcile` copies it verbatim into the stamp rather than re-deriving it. Absent from `/next-all`'s block → `src: ?`, never a guess. This field is what lets `/calibrate` compute follow rate per *class* of pick instead of per named track.
 
 ### Which command writes which sections
 
-| Section | `/next` | `/reconcile` mid-day | `/reconcile` eod |
+| Section | `/next-all` | `/reconcile` mid-day | `/reconcile` eod |
 |---|---|---|---|
 | Header `*Last updated: ... by /X*` | yes | yes | yes |
 | **Today's plan** (replaces "Shipped/In flight/What's next") | yes | — | — |
@@ -82,12 +82,12 @@ The `### Pick-follow` line is the stamp defined in `loop-contract.md` § Pick-fo
 | **Pick-follow** (stamp per `loop-contract.md`) | — | — | yes |
 | **⏸️ Pending (headless)** | — | headless runs only | headless runs only |
 
-`/next` uses a slightly different shape since there are no commits yet:
+`/next-all` uses a slightly different shape since there are no commits yet:
 
 ```markdown
 <!-- AI:START -->
 ## 🤖 AI Generated
-*Last updated: YYYY-MM-DD HH:MM by /next*
+*Last updated: YYYY-MM-DD HH:MM by /next-all*
 
 ### Today's plan
 - Pick: <KEY> [src: <source>] — first action: `cd <repo> && git checkout <branch>`

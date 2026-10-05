@@ -1,6 +1,6 @@
 # Threads — vault/THREADS.md protocol
 
-This helper is referenced by `/next` and `/reconcile`. It defines the THREADS.md system: format, statuses, update rules, and apply order.
+This helper is referenced by `/next-all` and `/reconcile`. It defines the THREADS.md system: format, statuses, update rules, and apply order.
 
 **File location:** declared in the workspace `CONTEXT.md` under § Paths → "THREADS.md". If the user doesn't keep a THREADS.md, the commands that reference this helper should skip the thread-update sections entirely.
 
@@ -32,8 +32,8 @@ Section count headers (`## 🔥 Open (N)`, `## 💤 Dormant (N)`) must be kept a
 
 ## Status semantics
 
-- 🔥 **Open** — active in the last ~30 days OR mentioned multiple times. Surfaced in `/next`.
-- 💤 **Dormant** — last touched >30 days ago. Not surfaced by default in `/next`; available as fallback context.
+- 🔥 **Open** — active in the last ~30 days OR mentioned multiple times. Surfaced in `/next-all`.
+- 💤 **Dormant** — last touched >30 days ago. Not surfaced by default in `/next-all`; available as fallback context.
 - **Done = deleted**, not archived. There is no archive section. When a thread is done, its entry is removed on confirmation. (User signaled this explicitly during cleanup on 2026-05-14.)
 
 ## Promotion / demotion / deletion rules
@@ -54,7 +54,7 @@ Compute on each `/reconcile` run. Always **propose** — never auto-apply.
 
 | Command | Reads | Proposes |
 |---|---|---|
-| `/next` | yes (read-only) | nothing — surfaces 🔥 Open in the digest |
+| `/next-all` | yes (read-only) | nothing — surfaces 🔥 Open in the digest |
 | `/reconcile` (mid-day) | yes | **deletions only** (done threads). No new-thread or demotion proposals — defer to eod, mirroring how mid-day defers new tickets. |
 | `/reconcile` (eod) | yes | additions (from today's brain dump), deletions (done), demotions (>30d), promotions (re-mentioned) |
 
@@ -76,7 +76,7 @@ After every set of changes, recompute and update the section count headers.
 
 ## Output sections in the digest
 
-In `/next`: a section titled `## 🧶 Open threads (opportunistic)`. List 🔥 entries as one-liners. If the top pick is blocked, include 1–2 of these in "Also consider" as "if you have time" options.
+In `/next-all`: a section titled `## 🧶 Open threads (opportunistic)`. List 🔥 entries as one-liners. If the top pick is blocked, include 1–2 of these in "Also consider" as "if you have time" options.
 
 In `/reconcile` (both modes): a section titled `### 🧶 Thread updates (THREADS.md)` with sub-bullets: **Delete (done)**, **Add (new from today)**, **Demote (>30d)**, **Promote (mentioned again)**. Only show non-empty sub-bullets.
 

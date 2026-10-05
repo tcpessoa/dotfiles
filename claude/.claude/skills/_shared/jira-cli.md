@@ -1,6 +1,6 @@
 # Jira CLI — quirks, queries, and apply order
 
-This is a **Jira-specific reference**. The generic `/next` and `/reconcile` commands only consult this file when the workspace `CONTEXT.md` declares `Tracker: Jira`. If your workspace uses `gh` or no tracker, ignore this file — the generic commands handle those cases inline.
+This is a **Jira-specific reference**. The generic `/next-all` and `/reconcile` commands only consult this file when the workspace `CONTEXT.md` declares `Tracker: Jira`. If your workspace uses `gh` or no tracker, ignore this file — the generic commands handle those cases inline.
 
 Captures everything about the `jira` CLI (https://github.com/ankitpokhrel/jira-cli) that's non-obvious. Username and config-file path are workspace-specific; see your `CONTEXT.md` § Identity / Issue tracker. Default location for the CLI's own config is `~/.config/.jira/.config.yml`.
 

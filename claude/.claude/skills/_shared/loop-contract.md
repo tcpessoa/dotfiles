@@ -1,6 +1,6 @@
 # Loop contract — the portable layer
 
-Workspace-agnostic protocol for every routine loop (`/next`, `/reconcile`, `/review`, `/express`, `/calibrate`, `/process-inbox` — and future repo-scoped loops per the vault's `adr/0004`). This file plus the state-format helpers (`threads.md`, `daily-notes.md`, `priorities.md`, `propose-apply.md`) are the **durable interface**: they carry between workspaces (vault ↔ code repo). Per-skill step-by-step process is scaffolding — an agent may adapt it; it may never trade away anything in this file.
+Workspace-agnostic protocol for every routine loop (`/next-all`, `/reconcile`, `/weekly-review`, `/express`, `/calibrate`, `/process-inbox` — and future repo-scoped loops per the vault's `adr/0004`). This file plus the state-format helpers (`threads.md`, `daily-notes.md`, `priorities.md`, `propose-apply.md`) are the **durable interface**: they carry between workspaces (vault ↔ code repo). Per-skill step-by-step process is scaffolding — an agent may adapt it; it may never trade away anything in this file.
 
 ## Contract shape (how a loop skill is written)
 
@@ -49,7 +49,7 @@ Pick: <key-or-thread> [src: <source>] → dropped
 Pick: (none — orient loop not run)
 ```
 
-Classify by judgment, not string-matching: commit-invisible follow-through (the brain dump shows the day went to reading/design/outreach *on the pick*) counts as `followed`. Evidence of activity is workspace-dependent — vault: code + vault commits + brain dump; code repo: commits, PR/merge activity, issue/review comments.
+Classify by judgment, not string-matching: commit-invisible follow-through (the brain dump shows the day went to reading/design/outreach *on the pick*) counts as `followed`. Evidence of activity is workspace-dependent — vault: code + vault commits + brain dump; code repo: commits, PR/merge activity, issue/weekly-review comments.
 
 **`src` — which rule produced the pick**, recorded by the orient loop in the same block, copied verbatim by the write-back loop: `bridge` / `continuity` / `starved-track` / `thread` / `tracker` / `guard-override`. This field is the audit's vocabulary: without it a learned rule can only name specific tracks (a hypothesis pinned to entities), with it a rule can quantify over a *class* of picks. Missing/unknown → `src: ?`; never guess.
 
