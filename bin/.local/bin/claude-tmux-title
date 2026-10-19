@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
-# Drive the tmux window name from Claude Code hook events.
+# Drive the tmux window name + agent state from Claude Code hook events.
 #
-#   claude-tmux-title working   # UserPromptSubmit: name window after the prompt  -> "▶ ..."
-#   claude-tmux-title done       # Stop: mark window finished (awaiting user)      -> "✓ ..."
-#   claude-tmux-title notify     # Notification: needs your input / permission      -> "⏸ ..."
+#   claude-tmux-title working   # UserPromptSubmit: name window, state running
+#   claude-tmux-title run       # PostToolUse: state running (clears ⏸ after a permission)
+#   claude-tmux-title notify    # Notification: state paused (needs your input)
+#   claude-tmux-title done      # Stop: refresh name, state done (your turn)
+#   claude-tmux-title clear     # SessionEnd: drop state, hand naming back to tmux
+#
+# The window name is the session title: /rename (custom-title) > Claude's auto
+# title (ai-title) > the prompt. The ▶/⏸/✓ glyph and tab color come from @agent in
+# the theme, so the name itself stays clean.
 #
 # Reads the hook's JSON payload on stdin. No-ops cleanly when not inside tmux.
 # Prints nothing to stdout (UserPromptSubmit would otherwise inject it as context).
@@ -17,14 +23,10 @@ input="$(cat)"
 # Outside tmux there's nothing to rename.
 [ -z "$TMUX" ] && exit 0
 
-# Strip any leading status glyph this script may have added previously.
-strip_glyph() {
-  local s="$1" g
-  for g in "▶ " "✓ " "⏸ "; do s="${s#"$g"}"; done
-  printf '%s' "$s"
-}
+j() { printf '%s' "$input" | jq -r "$1 // empty" 2>/dev/null; }
 
-# Record agent state + its tab color as per-window options so the theme can color the tab.
+# Record agent state + its tab color as per-window options (one tmux call: this
+# runs on every tool use).
 set_state() {
   local color=""
   case "$1" in
@@ -32,38 +34,53 @@ set_state() {
     paused)  color="#E46876" ;;  # red    — needs you
     done)    color="#98BB6C" ;;  # green  — your turn
   esac
-  tmux set-option -w -t "$TMUX_PANE" @agent "$1" 2>/dev/null
-  tmux set-option -w -t "$TMUX_PANE" @agent_color "$color" 2>/dev/null
+  tmux set-option -w -t "$TMUX_PANE" @agent "$1" \; \
+       set-option -w -t "$TMUX_PANE" @agent_color "$color" 2>/dev/null
 }
 
-# Re-label the current window, preserving the existing text after the glyph.
-relabel() {
-  local glyph="$1" state="$2" cur
-  cur="$(tmux display-message -p -t "$TMUX_PANE" '#W' 2>/dev/null)"
-  tmux rename-window -t "$TMUX_PANE" "${glyph} $(strip_glyph "$cur")" 2>/dev/null
-  set_state "$state"
+# Session title from the transcript. Claude rewrites these lines through the
+# session, so the last one is current; a /rename beats the auto title.
+# A full scan of a large (~13MB) transcript is ~50-90ms, so only call this at turn
+# boundaries, never per tool use.
+transcript_title() {
+  local t lines v
+  t="$(j .transcript_path)"
+  [ -f "$t" ] || return
+  lines="$(grep -E '^\{"type":"(custom|ai)-title"' -- "$t")"
+  v="$(printf '%s\n' "$lines" | grep '"custom-title"' | tail -1 | jq -r '.customTitle // empty' 2>/dev/null)"
+  [ -z "$v" ] && v="$(printf '%s\n' "$lines" | grep '"ai-title"' | tail -1 | jq -r '.aiTitle // empty' 2>/dev/null)"
+  printf '%s' "$v"
+}
+
+# Squash whitespace, truncate, rename. Empty input leaves the name alone.
+name_window() {
+  local title
+  title="$(printf '%s' "$1" | tr '\n\t' '  ' | tr -s ' ' | sed 's/^ *//; s/ *$//')"
+  [ -z "$title" ] && return
+  if [ "${#title}" -gt "$max" ]; then
+    title="$(printf '%s' "$title" | cut -c1-"$max" | sed 's/ *$//')…"
+  fi
+  tmux rename-window -t "$TMUX_PANE" "$title" 2>/dev/null
 }
 
 case "$mode" in
   working)
-    prompt="$(printf '%s' "$input" | jq -r '.prompt // empty' 2>/dev/null)"
-    [ -z "$prompt" ] && exit 0
-    title="$(printf '%s' "$prompt" | tr '\n\t' '  ' | tr -s ' ' | sed 's/^ *//; s/ *$//')"
-    if [ "${#title}" -gt "$max" ]; then
-      title="$(printf '%s' "$title" | cut -c1-"$max" | sed 's/ *$//')…"
-    fi
-    tmux rename-window -t "$TMUX_PANE" "▶ $title" 2>/dev/null
+    # first prompt has no title yet -> fall back to the prompt text
+    title="$(transcript_title)"
+    [ -z "$title" ] && title="$(j .prompt)"
+    name_window "$title"
     set_state running
     ;;
   run)
-    # a tool just executed -> back to running (re-toggles ⏸ after a permission is approved)
-    relabel "▶" running
-    ;;
-  done)
-    relabel "✓" done
+    set_state running
     ;;
   notify)
-    relabel "⏸" paused
+    set_state paused
+    ;;
+  done)
+    # picks up the auto title once generated, and any /rename since the last turn
+    name_window "$(transcript_title)"
+    set_state done
     ;;
   clear)
     # session ended -> drop state so the cross-session roll-up stops counting it,
